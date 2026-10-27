@@ -1,10 +1,11 @@
 // Service worker da Five Star Home.
 // Para publicar uma versão nova e forçar atualização nos celulares, troque o número abaixo.
-const CACHE = 'fivestar-v2';
+const CACHE = 'fivestar-v3';
 const SHELL = [
   '/',
   '/index.html',
   '/admin.html',
+  '/demo-data.js',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

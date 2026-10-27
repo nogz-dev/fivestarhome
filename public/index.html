@@ -84,6 +84,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .b-warn{background:var(--warn);color:#2A1A00}
 .b-info{background:rgba(158,193,255,.18);color:#B9D2FF}
 .b-gold{background:var(--gold);color:var(--ink)}
+.b-crit{background:rgba(255,156,140,.16);color:#FFBCB1}
+.b-neutral{background:var(--glass-2);color:var(--fg)}
 .dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
 .ico{width:40px;height:40px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center}
 .brand{align-self:flex-start;display:flex;align-items:center;gap:10px;padding:7px 14px 7px 7px;border-radius:999px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:13px;font-weight:800;letter-spacing:.08em}
@@ -410,6 +412,59 @@ img{max-width:100%}
   </div>
 </section>
 
+<!-- EQUIPE · PAINEL -->
+<section data-view="equipe-painel" hidden>
+  <div class="between">
+    <div><span class="small muted">Outubro de 2026</span><h1 style="font-size:26px">Painel do negócio</h1></div>
+    <span class="badge b-gold">Exemplo</span>
+  </div>
+  <div class="grid2" id="tpKpis"></div>
+  <div class="between" style="margin-top:4px"><span class="eyebrow">Precisa de atenção</span><span class="xs muted" id="tpAttnCount"></span></div>
+  <div class="stack" id="tpAttn"></div>
+  <span class="eyebrow" style="margin-top:4px">Receita por plano</span>
+  <div class="card" id="tpPlans" style="gap:10px"></div>
+  <a class="btn ghost" href="/admin.html">Abrir painel completo</a>
+  <p class="xs muted" style="text-align:center">O painel completo tem financeiro, comercial, inspeções e equipe. Melhor no computador.</p>
+</section>
+
+<!-- EQUIPE · CHAMADOS -->
+<section data-view="equipe-chamados" hidden>
+  <div><h1 style="font-size:26px">Chamados</h1><span class="xs muted" id="tcSub"></span></div>
+  <div class="chips" id="tcFilter" role="group" aria-label="Filtrar chamados"></div>
+  <div class="stack" id="tcList"></div>
+</section>
+
+<!-- EQUIPE · SUPORTE -->
+<section data-view="equipe-suporte" hidden>
+  <div id="tsListView" class="stack">
+    <div><h1 style="font-size:26px">Suporte</h1><span class="xs muted">Mensagens dos clientes pelo app</span></div>
+    <div class="stack" id="tsList"></div>
+  </div>
+  <div id="tsThreadView" class="stack" hidden>
+    <div class="row"><button class="iconbtn" type="button" id="tsBack" aria-label="Voltar às conversas"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></button><div style="flex:1;min-width:0"><h2 id="tsName"></h2><span class="xs muted" id="tsTopic"></span></div><button class="btn ghost sm" type="button" id="tsResolve"></button></div>
+    <div class="card big" style="gap:12px">
+      <div class="msgs" id="tsMsgs" aria-live="polite"></div>
+      <form class="composer" id="tsForm"><label for="tsInput" style="position:absolute;left:-9999px">Resposta</label><input id="tsInput" type="text" placeholder="Escreva a resposta" autocomplete="off"><button class="btn" type="submit" style="min-height:48px;padding:0 16px">Enviar</button></form>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPE · CLIENTES -->
+<section data-view="equipe-clientes" hidden>
+  <div><h1 style="font-size:26px">Clientes</h1><span class="xs muted" id="tlSub"></span></div>
+  <label class="field" for="tlSearch" style="gap:0"><span style="position:absolute;left:-9999px">Buscar cliente</span><input id="tlSearch" type="search" placeholder="Buscar cliente ou imóvel"></label>
+  <div class="chips" id="tlFilter" role="group" aria-label="Filtrar por pagamento"></div>
+  <div class="stack" id="tlList"></div>
+</section>
+
+<nav class="tabbar" id="teamTabbar" aria-label="Menu da equipe" hidden>
+  <a href="#equipe" data-tab="equipe"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/></svg>Hoje</a>
+  <a href="#equipe-painel" data-tab="equipe-painel"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-4H4zM14 7h6V4h-6z"/></svg>Painel</a>
+  <a href="#equipe-chamados" data-tab="equipe-chamados"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>Chamados<span class="count" data-team-count="chamados" hidden></span></a>
+  <a href="#equipe-suporte" data-tab="equipe-suporte"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Suporte<span class="count" data-team-count="suporte" hidden></span></a>
+  <a href="#equipe-clientes" data-tab="equipe-clientes"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7"/></svg>Clientes</a>
+</nav>
+
 <nav class="tabbar" id="tabbar" aria-label="Menu principal" hidden>
   <a href="#inicio" data-tab="inicio"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6h-6v6H4z"/></svg>Início</a>
   <a href="#imoveis" data-tab="imoveis"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="8" height="11" rx="1"/><path d="M11 20h10V6l-5-3-5 3z"/></svg>Imóveis</a>
@@ -419,14 +474,15 @@ img{max-width:100%}
 </nav>
 </main>
 
+<script src="/demo-data.js"></script>
 <script>
 (function(){
   const $ = (s) => document.querySelector(s);
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const VIEWS = ['entrar','planos','assinar','bem-vindo','inicio','imoveis','inspecao','agenda','chamados','avisos','suporte','conta','equipe','equipe-inspecao'];
+  const VIEWS = ['entrar','planos','assinar','bem-vindo','inicio','imoveis','inspecao','agenda','chamados','avisos','suporte','conta','equipe','equipe-inspecao','equipe-painel','equipe-chamados','equipe-suporte','equipe-clientes'];
   const OWNER = ['inicio','imoveis','inspecao','agenda','chamados','avisos','suporte','conta'];
   const TABMAP = { inspecao:'imoveis', agenda:'imoveis', suporte:'conta' };
-  const TEAM = ['equipe','equipe-inspecao'];
+  const TEAM = ['equipe','equipe-inspecao','equipe-painel','equipe-chamados','equipe-suporte','equipe-clientes'];
   const store = {
     get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
     set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
@@ -498,6 +554,10 @@ img{max-width:100%}
     const tb = $('#tabbar'); tb.hidden = !OWNER.includes(v);
     const active = TABMAP[v] || v;
     tb.querySelectorAll('a').forEach((a) => a.dataset.tab === active ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
+    const ttb = $('#teamTabbar'); ttb.hidden = !TEAM.includes(v);
+    const tActive = v === 'equipe-inspecao' ? 'equipe' : v;
+    ttb.querySelectorAll('a').forEach((a) => a.dataset.tab === tActive ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
+    if (TEAM.includes(v)) renderTeamAdmin(v);
     if (v === 'planos') $('#plansBack').setAttribute('href', state.session === 'owner' ? '#conta' : '#entrar');
     if (v === 'assinar') setStep(state.session === 'owner' && state.buyStep === 1 ? 2 : state.buyStep);
     if (v === 'inspecao') renderInsp();
@@ -743,6 +803,96 @@ img{max-width:100%}
     renderChk();
   });
   $('#sendReport').onclick = () => { $('#chkList').hidden = true; $('#sendReport').hidden = true; $('#reportDone').hidden = false; $('#teamFirstBadge').textContent = 'Concluída'; };
+
+  // EQUIPE · FUNÇÕES DE ADMINISTRAÇÃO NO APP
+  const T = window.FSH_DEMO ? JSON.parse(JSON.stringify(window.FSH_DEMO)) : null;
+  const tUsd = (n) => 'US$ ' + Math.round(n).toLocaleString('pt-BR');
+  const tClient = (id) => T.clients.find((c) => c.id === id);
+  const tProp = (id) => T.props.find((p) => p.id === id);
+  const tMrr = () => T.props.reduce((s,p) => s + T.PLANS[p.plan].price, 0);
+  const TK_ST = { recebido:['b-crit','Novo'], autorizacao:['b-warn','Aguardando cliente'], andamento:['b-info','Em andamento'], resolvido:['b-ok','Resolvido'] };
+  const TK_PRIO = { urgente:['b-crit','Urgente'], alta:['b-warn','Alta'], normal:['b-neutral','Normal'], baixa:['b-neutral','Baixa'] };
+  const T_PAY = { ok:['b-ok','Em dia'], due:['b-info','A vencer'], late:['b-crit','Em atraso'] };
+  let tcF = 'abertos', tsSel = null, tlQ = '', tlF = 'todos';
+
+  function teamCounts(){
+    const c = { chamados: T.tickets.filter((t) => t.status === 'recebido').length, suporte: T.convs.filter((x) => x.unread).length };
+    document.querySelectorAll('[data-team-count]').forEach((el) => { const n = c[el.dataset.teamCount]; el.textContent = n; el.hidden = !n; });
+  }
+  function renderTeamAdmin(v){
+    if (!T) return;
+    teamCounts();
+    if (v === 'equipe-painel') renderTeamPanel();
+    if (v === 'equipe-chamados') renderTeamTickets();
+    if (v === 'equipe-suporte') renderTeamSupport();
+    if (v === 'equipe-clientes') renderTeamClients();
+  }
+  function renderTeamPanel(){
+    const open = T.tickets.filter((t) => t.status !== 'resolvido');
+    const late = T.invoices.filter((i) => i.status === 'late');
+    const k = [
+      ['Receita recorrente', tUsd(tMrr()), '+' + (499 / (tMrr() - 499) * 100).toFixed(1).replace('.',',') + '% vs setembro', 'var(--ok)'],
+      ['Clientes ativos', T.clients.length, T.props.length + ' imóveis', 'var(--muted)'],
+      ['Chamados abertos', open.length, open.filter((t)=>t.status==='recebido').length + ' sem responsável', 'var(--warn)'],
+      ['Em atraso', tUsd(late.reduce((s,i)=>s+i.value,0)), late.length + ' faturas', '#FFB4A8'],
+      ['Leads novos', T.leads.filter((l)=>l.stage==='novo').length, 'para responder hoje', 'var(--muted)'],
+      ['Inspeções da semana', T.inspections.filter((i)=>i.result==='ok'||i.result==='attn').length + ' de ' + T.inspections.filter((i)=>i.result!=='atrasada').length, '1 atrasada', '#FFB4A8']
+    ];
+    $('#tpKpis').innerHTML = k.map(([l,val,d,c]) => `<div class="card stat" style="gap:2px"><span class="xs muted">${l}</span><b style="font-size:21px">${val}</b><span class="xs" style="color:${c};font-weight:600">${d}</span></div>`).join('');
+    const attn = [];
+    T.tickets.filter((t) => t.status === 'recebido').forEach((t) => attn.push(['b-crit','Crítico', t.title, tProp(t.prop).name + ' · sem responsável', '#equipe-chamados']));
+    late.forEach((i) => attn.push(['b-crit','Crítico', 'Fatura em atraso · ' + tUsd(i.value), tClient(i.client).name + ' · venceu ' + i.due, '#equipe-clientes']));
+    T.convs.filter((c) => c.unread).forEach((c) => attn.push(['b-info','Info', 'Mensagem sem resposta', c.client + ' · ' + c.topic, '#equipe-suporte']));
+    T.tickets.filter((t) => t.status === 'autorizacao').forEach((t) => attn.push(['b-warn','Atenção', 'Aguardando autorização do cliente', t.title, '#equipe-chamados']));
+    $('#tpAttnCount').textContent = attn.length + ' itens';
+    $('#tpAttn').innerHTML = attn.length ? attn.map(([b,bl,t,s,go]) => `<a class="card" href="${go}" style="flex-direction:row;align-items:center;gap:12px"><span class="badge ${b}">${bl}</span><span style="flex:1;min-width:0"><b class="small">${esc(t)}</b><br><span class="xs muted">${esc(s)}</span></span></a>`).join('') : '<p class="small muted">Nada pendente agora.</p>';
+    const max = Math.max(...['essential','premium','vip'].map((p) => T.props.filter((x)=>x.plan===p).length * T.PLANS[p].price));
+    $('#tpPlans').innerHTML = ['essential','premium','vip'].map((p) => { const n = T.props.filter((x)=>x.plan===p).length, rev = n * T.PLANS[p].price; return `<div style="display:flex;flex-direction:column;gap:5px"><div class="between small"><span>${T.PLANS[p].name} <span class="muted">· ${n} imóveis</span></span><b>${tUsd(rev)}</b></div><div class="progress"><i style="width:${rev/max*100}%"></i></div></div>`; }).join('');
+  }
+  function renderTeamTickets(){
+    const open = T.tickets.filter((t) => t.status !== 'resolvido');
+    $('#tcSub').textContent = open.length + ' abertos · ' + T.tickets.filter((t)=>t.status==='recebido').length + ' sem responsável';
+    const F = [['abertos','Abertos'],['recebido','Novos'],['andamento','Em andamento'],['autorizacao','Aguardando cliente'],['resolvido','Resolvidos']];
+    $('#tcFilter').innerHTML = F.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${tcF===k}">${l}</button>`).join('');
+    const order = { urgente:0, alta:1, normal:2, baixa:3 };
+    const rows = T.tickets.filter((t) => tcF === 'abertos' ? t.status !== 'resolvido' : t.status === tcF).sort((a,b) => order[a.prio] - order[b.prio]);
+    $('#tcList').innerHTML = rows.length ? rows.map((t) => { const p = tProp(t.prop); return `<div class="card" style="gap:10px"><div class="between" style="align-items:flex-start"><b class="small">${esc(t.title)}</b><span class="badge ${TK_PRIO[t.prio][0]}">${TK_PRIO[t.prio][1]}</span></div><span class="xs muted">${esc(p.name)} · ${esc(tClient(p.client).name)} · aberto ${t.opened}</span><div class="grid2" style="grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)"><label class="field" for="tw${t.id}">Responsável<select id="tw${t.id}" data-tw="${t.id}" style="height:42px">${['—','Matheus','Jessica'].map((w)=>`<option ${t.who===w?'selected':''}>${w}</option>`).join('')}</select></label><label class="field" for="ts${t.id}">Status<select id="ts${t.id}" data-ts="${t.id}" style="height:42px">${Object.keys(TK_ST).map((k)=>`<option value="${k}" ${t.status===k?'selected':''}>${TK_ST[k][1]}</option>`).join('')}</select></label></div></div>`; }).join('') : '<p class="small muted">Nenhum chamado aqui.</p>';
+  }
+  $('#tcFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { tcF = b.dataset.f; renderTeamTickets(); } });
+  $('#tcList').addEventListener('change', (e) => {
+    const s = e.target;
+    if (s.dataset.tw) { const t = T.tickets.find((x) => x.id === +s.dataset.tw); t.who = s.value; if (t.status === 'recebido' && s.value !== '—') t.status = 'andamento'; toast('Responsável definido. O cliente recebe um aviso.'); }
+    if (s.dataset.ts) { T.tickets.find((x) => x.id === +s.dataset.ts).status = s.value; toast('Status atualizado. O cliente recebe um aviso.'); }
+    renderTeamTickets(); teamCounts();
+  });
+  function renderTeamSupport(){
+    $('#tsListView').hidden = tsSel !== null; $('#tsThreadView').hidden = tsSel === null;
+    if (tsSel === null) {
+      $('#tsList').innerHTML = T.convs.map((c) => `<button type="button" class="card upd ${c.unread?'unread':''}" data-conv="${c.id}"><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span class="between"><b class="small">${esc(c.client)}</b>${c.unread ? '<span class="badge b-gold">Nova</span>' : c.open ? '' : '<span class="badge b-ok">Resolvida</span>'}</span><span class="xs muted">${esc(c.topic)}</span><span class="xs" style="color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.msgs[c.msgs.length-1].t)}</span></span></button>`).join('');
+      return;
+    }
+    const c = T.convs.find((x) => x.id === tsSel); c.unread = false; teamCounts();
+    $('#tsName').textContent = c.client; $('#tsTopic').textContent = c.topic + (c.open ? ' · aberta' : ' · resolvida');
+    $('#tsResolve').textContent = c.open ? 'Resolver' : 'Reabrir';
+    $('#tsMsgs').innerHTML = c.msgs.map((m) => `<div class="msg ${m.me?'me':'them'}">${esc(m.t)}<small>${m.me?'Five Star':esc(c.client)} · ${m.when}</small></div>`).join('');
+  }
+  $('#tsList').addEventListener('click', (e) => { const b = e.target.closest('[data-conv]'); if (b) { tsSel = +b.dataset.conv; renderTeamSupport(); window.scrollTo(0,0); } });
+  $('#tsBack').onclick = () => { tsSel = null; renderTeamSupport(); };
+  $('#tsResolve').onclick = () => { const c = T.convs.find((x) => x.id === tsSel); c.open = !c.open; renderTeamSupport(); };
+  $('#tsForm').addEventListener('submit', (e) => {
+    e.preventDefault(); const t = $('#tsInput').value.trim(); if (!t) return;
+    T.convs.find((x) => x.id === tsSel).msgs.push({ me:true, t, when:now() }); $('#tsInput').value = ''; renderTeamSupport(); toast('Resposta enviada. O cliente recebe um aviso no app.');
+  });
+  function renderTeamClients(){
+    $('#tlSub').textContent = T.clients.length + ' clientes · ' + tUsd(tMrr()) + '/mês';
+    const F = [['todos','Todos'],['ok','Em dia'],['due','A vencer'],['late','Em atraso']];
+    $('#tlFilter').innerHTML = F.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${tlF===k}">${l}</button>`).join('');
+    const rows = T.clients.filter((c) => (tlF === 'todos' || c.pay === tlF) && (!tlQ || (c.name + ' ' + T.props.filter((p)=>p.client===c.id).map((p)=>p.name).join(' ')).toLowerCase().includes(tlQ)));
+    $('#tlList').innerHTML = rows.length ? rows.map((c) => { const ps = T.props.filter((p) => p.client === c.id); const total = ps.reduce((s,p)=>s+T.PLANS[p.plan].price,0); return `<div class="card" style="gap:8px"><div class="between"><b class="small">${esc(c.name)}</b><span class="badge ${T_PAY[c.pay][0]}">${T_PAY[c.pay][1]}</span></div><span class="xs muted">${ps.map((p)=>esc(p.name) + ' · ' + T.PLANS[p.plan].name).join('<br>')}</span><div class="between"><span class="small"><b>${tUsd(total)}</b><span class="muted">/mês · cliente desde ${c.since}</span></span>${c.pay==='late' ? `<button type="button" class="btn sm" data-remind="${c.id}" style="min-height:36px">Cobrar</button>` : ''}</div></div>`; }).join('') : '<p class="small muted">Nenhum cliente encontrado.</p>';
+  }
+  $('#tlSearch').addEventListener('input', (e) => { tlQ = e.target.value.trim().toLowerCase(); renderTeamClients(); });
+  $('#tlFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { tlF = b.dataset.f; renderTeamClients(); } });
+  $('#tlList').addEventListener('click', (e) => { const b = e.target.closest('[data-remind]'); if (b) toast('Lembrete de pagamento enviado para ' + tClient(+b.dataset.remind).name + '.'); });
 
   renderPlans(); renderUrg(); renderMsgs(); renderChk(); renderOwner();
   show();
