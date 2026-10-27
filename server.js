@@ -51,6 +51,10 @@ const server = http.createServer((req, res) => {
     res.writeHead(400);
     return res.end('Bad request');
   }
+  // Atalho: /admin abre o painel do administrador.
+  if (urlPath === '/admin' || urlPath === '/admin/') {
+    return send(res, 200, path.join(ROOT, 'admin.html'));
+  }
   const filePath = path.normalize(path.join(ROOT, urlPath));
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403);

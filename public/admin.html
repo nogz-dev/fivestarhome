@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Five Star Admin</title>
+<meta name="theme-color" content="#08121E">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: sidebar + content grid on desktop; sidebar becomes a horizontal scroller on phones. Same dark glass language as the client app. */
+:root{
+  --bg:#08121E; --panel:rgba(255,255,255,.055); --panel-2:rgba(255,255,255,.1); --line:rgba(255,255,255,.12);
+  --fg:#F4F1EA; --muted:rgba(244,241,234,.7); --faint:rgba(244,241,234,.48);
+  --gold:#D9B979; --gold-soft:rgba(217,185,121,.15);
+  --ok:#7FD8B0; --ok-soft:rgba(127,216,176,.15); --warn:#F2B866; --warn-soft:rgba(242,184,102,.14);
+  --crit:#FF9C8C; --crit-soft:rgba(255,156,140,.14); --info:#9EC1FF; --info-soft:rgba(158,193,255,.15);
+  --ink:#08121E; --surface:#101D2C;
+  --font:'Manrope','Segoe UI',system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+[hidden]{display:none!important}
+.orb{position:fixed;border-radius:999px;pointer-events:none;filter:blur(110px);z-index:0}
+.orb.a{width:520px;height:520px;background:#C9A86A;opacity:.18;top:-220px;right:-160px}
+.orb.b{width:560px;height:560px;background:#2F6FD6;opacity:.18;bottom:-260px;left:-200px}
+a{color:var(--gold);text-decoration:none}
+h1,h2,h3{margin:0;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:26px;font-weight:800}
+h2{font-size:15px;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)} .faint{color:var(--faint)} .xs{font-size:12px} .sm{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:0;height:100vh;padding:20px 14px;border-right:1px solid var(--line);background:rgba(8,18,30,.55);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px;letter-spacing:.08em;padding:4px 6px}
+.brand span{width:32px;height:32px;border-radius:999px;background:var(--gold);display:flex;align-items:center;justify-content:center}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;min-height:42px;padding:0 12px;border-radius:12px;color:var(--muted);font-weight:600;font-size:14px;white-space:nowrap}
+.nav a:hover{background:var(--panel);color:var(--fg)}
+.nav a[aria-current="page"]{background:var(--panel-2);color:var(--fg);font-weight:700}
+.nav .pill{margin-left:auto;min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:var(--ink);font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.me{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.avatar{width:34px;height:34px;flex-shrink:0;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:800;display:flex;align-items:center;justify-content:center}
+.main{min-width:0;padding-block:24px 48px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(217,185,121,.35)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+section[data-view]{display:flex;flex-direction:column;gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.kpis.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1280px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.kpis,.kpis.four{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .value{font-size:21px}}
+.g-2-1 > .card:first-child{display:flex;flex-direction:column}
+.g-2-1 > .card:first-child .chart{flex:1;display:flex;align-items:center}
+.kpi{display:flex;flex-direction:column;gap:4px;padding:16px}
+.kpi .label{font-size:12px;font-weight:600;color:var(--muted)}
+.kpi .value{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .delta{font-size:12px;font-weight:600}
+.up{color:var(--ok)} .down{color:var(--crit)}
+.grid{display:grid;gap:16px}
+.g-2-1{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.g-1-1{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.list{display:flex;flex-direction:column}
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.li:first-child{border-top:none}
+.li .grow{flex:1;min-width:0}
+.badge{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.badge svg{width:11px;height:11px}
+.b-ok{background:var(--ok-soft);color:#A6EBCB}
+.b-warn{background:var(--warn-soft);color:#F7CC8C}
+.b-crit{background:var(--crit-soft);color:#FFBCB1}
+.b-info{background:var(--info-soft);color:#BDD4FF}
+.b-neutral{background:var(--panel-2);color:var(--fg)}
+.btn{appearance:none;border:none;font:inherit;font-weight:700;font-size:13px;min-height:38px;border-radius:12px;padding:0 14px;background:var(--fg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.btn.ghost{background:var(--panel);color:var(--fg);border:1px solid var(--line);font-weight:600}
+.btn.gold{background:var(--gold)}
+.btn.tiny{min-height:32px;font-size:12px;padding:0 10px;border-radius:10px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search{height:38px;min-width:0;flex:1 1 220px;max-width:340px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--fg);padding:0 12px;font:inherit;font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--ink);border-color:var(--fg);font-weight:700}
+.table-wrap{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+select.inline{height:32px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--fg);font:inherit;font-size:12px;padding:0 8px}
+select.inline option, select option{color:var(--ink)}
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--fg);padding:0 12px;font:inherit;font-size:14px;width:100%}
+.field textarea{height:auto;padding:10px 12px;resize:vertical}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;z-index:5;padding:8px 10px;border-radius:10px;background:rgba(16,29,44,.96);border:1px solid var(--line);font-size:12px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);transform:translate(-50%,-110%)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar-row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px}
+.bar-track{height:12px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar-fill{height:100%;border-radius:0 4px 4px 0;background:var(--gold)}
+.funnel .bar-row{grid-template-columns:150px minmax(0,1fr) 90px}
+.dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
+.feed .li{align-items:flex-start}
+.inbox{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;min-height:480px}
+.conv{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;padding:12px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--fg);font:inherit;cursor:pointer}
+.conv[aria-pressed="true"]{background:var(--panel-2);border-color:var(--line)}
+.msgs{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:260px}
+.msg{max-width:78%;padding:10px 14px;border-radius:16px;font-size:13px}
+.msg.them{align-self:flex-start;background:var(--panel-2);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:var(--fg);color:var(--ink);border-bottom-right-radius:5px}
+.msg small{display:block;font-size:11px;opacity:.65;margin-top:2px}
+.toast{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;padding:12px 16px;border-radius:14px;background:rgba(16,29,44,.96);border:1px solid var(--line);font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.45);max-width:calc(100% - 40px)}
+.empty{padding:24px 0;text-align:center;color:var(--muted);font-size:13px}
+@media (max-width:1100px){.g-2-1,.g-3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:0;height:auto;z-index:10;flex-direction:row;align-items:center;gap:10px;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-right:none;border-bottom:1px solid var(--line)}
+  .brand b{display:none}
+  .nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;flex:1}
+  .nav a{min-height:38px;padding:0 10px;font-size:13px}
+  .nav a svg{display:none}
+  .side-foot{display:none}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .g-1-1{grid-template-columns:minmax(0,1fr)}
+  .inbox{grid-template-columns:minmax(0,1fr)}
+  .bar-row{grid-template-columns:90px minmax(0,1fr) auto}
+  .funnel .bar-row{grid-template-columns:110px minmax(0,1fr) 70px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="orb a" aria-hidden="true"></div>
+<div class="orb b" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><span><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,16.5 5.5,21 7.5,13.5 2,9 9,9" fill="#08121E"/></svg></span><b>FIVE STAR ADMIN</b></div>
+    <nav class="nav" id="nav" aria-label="Seções do painel"></nav>
+    <div class="side-foot">
+      <div class="me"><span class="avatar">J</span><div style="min-width:0"><b class="sm">Jessica Freitas</b><br><span class="xs muted">Administradora</span></div></div>
+      <a class="btn ghost" href="/#entrar" id="logout">Sair</a>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+
+    <!-- VISÃO GERAL -->
+    <section data-view="visao" hidden>
+      <div class="top">
+        <div><span class="xs muted">Terça, 27 de outubro de 2026</span><h1>Visão geral do negócio</h1></div>
+        <span class="tag">Dados de exemplo</span>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g-2-1">
+        <div class="card">
+          <div class="card-h"><div><h2>Receita recorrente mensal</h2><span class="xs muted">Soma dos planos ativos, em US$</span></div></div>
+          <div class="chart" id="mrrChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h2>Precisa de atenção</h2><span class="badge b-warn" id="attnCount"></span></div>
+          <div class="list" id="attnList"></div>
+        </div>
+      </div>
+      <div class="grid g-3">
+        <div class="card"><div class="card-h"><h2>Imóveis por plano</h2></div><div class="bars" id="planBars"></div></div>
+        <div class="card"><div class="card-h"><h2>Receita por região</h2><span class="xs muted">US$/mês</span></div><div class="bars" id="regionBars"></div></div>
+        <div class="card"><div class="card-h"><h2>Funil do mês</h2><a class="xs" href="#comercial">Comercial</a></div><div class="bars funnel" id="funnelMini"></div></div>
+      </div>
+      <div class="grid g-1-1">
+        <div class="card"><div class="card-h"><h2>Agenda de hoje</h2><a class="xs" href="#equipe">Equipe</a></div><div class="list" id="todayList"></div></div>
+        <div class="card"><div class="card-h"><h2>Atividade recente</h2></div><div class="list feed" id="feed"></div></div>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section data-view="clientes" hidden>
+      <div class="top"><div><h1>Clientes</h1><span class="sm muted" id="cliSub"></span></div><button class="btn" type="button" id="newClient">+ Novo cliente</button></div>
+      <form class="card" id="clientForm" hidden style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
+        <label class="field" for="ncName">Nome<input id="ncName" required></label>
+        <label class="field" for="ncProp">Imóvel<input id="ncProp" placeholder="Ex.: Casa em Winter Garden" required></label>
+        <label class="field" for="ncCity">Cidade<select id="ncCity"><option>Orlando</option><option>Miami</option><option>Kissimmee</option></select></label>
+        <label class="field" for="ncPlan">Plano<select id="ncPlan"><option value="essential">Essential Care</option><option value="premium" selected>Premium</option><option value="vip">VIP</option></select></label>
+        <div class="toolbar"><button class="btn" type="submit">Salvar</button><button class="btn ghost" type="button" id="cancelClient">Cancelar</button></div>
+      </form>
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:12px"><input class="search" id="cliSearch" type="search" placeholder="Buscar cliente ou imóvel" aria-label="Buscar cliente"><div class="chips" id="cliFilter"></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Imóveis</th><th>Planos</th><th class="r">Mensal</th><th>Pagamento</th><th>Cliente desde</th></tr></thead><tbody id="cliBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- IMÓVEIS -->
+    <section data-view="imoveis" hidden>
+      <div class="top"><div><h1>Imóveis</h1><span class="sm muted" id="propSub"></span></div></div>
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:12px"><input class="search" id="propSearch" type="search" placeholder="Buscar imóvel" aria-label="Buscar imóvel"><div class="chips" id="propFilter"></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Imóvel</th><th>Cliente</th><th>Região</th><th>Plano</th><th>Uso</th><th>Última inspeção</th><th>Status</th></tr></thead><tbody id="propBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- CHAMADOS -->
+    <section data-view="chamados" hidden>
+      <div class="top"><div><h1>Chamados</h1><span class="sm muted" id="tkSub"></span></div></div>
+      <div class="kpis four" id="tkKpis"></div>
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:12px"><div class="chips" id="tkFilter"></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Chamado</th><th>Imóvel</th><th>Prioridade</th><th>Aberto</th><th>Responsável</th><th>Status</th></tr></thead><tbody id="tkBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- INSPEÇÕES -->
+    <section data-view="inspecoes" hidden>
+      <div class="top"><div><h1>Inspeções</h1><span class="sm muted">Semana de 26/10 a 01/11</span></div></div>
+      <div class="kpis four" id="inKpis"></div>
+      <div class="card">
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Imóvel</th><th>Plano</th><th>Responsável</th><th class="r">Fotos</th><th>Resultado</th></tr></thead><tbody id="inBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- FINANCEIRO -->
+    <section data-view="financeiro" hidden>
+      <div class="top"><div><h1>Financeiro</h1><span class="sm muted">Faturas de outubro e novembro de 2026</span></div></div>
+      <div class="kpis four" id="finKpis"></div>
+      <div class="card">
+        <div class="toolbar" style="margin-bottom:12px"><div class="chips" id="finFilter"></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Referência</th><th>Vencimento</th><th class="r">Valor</th><th>Status</th><th></th></tr></thead><tbody id="finBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- COMERCIAL -->
+    <section data-view="comercial" hidden>
+      <div class="top"><div><h1>Comercial</h1><span class="sm muted">Pedidos de avaliação e novos contratos em outubro</span></div></div>
+      <div class="grid g-1-1">
+        <div class="card"><div class="card-h"><h2>Funil de vendas</h2><span class="xs muted">outubro</span></div><div class="bars funnel" id="funnel"></div></div>
+        <div class="card"><div class="card-h"><h2>Leads por origem</h2></div><div class="bars" id="sourceBars"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Leads</h2></div>
+        <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Origem</th><th>Região</th><th>Interesse</th><th>Recebido</th><th>Etapa</th></tr></thead><tbody id="leadBody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Indicações</h2><span class="xs muted">US$ 300 por indicado com contrato anual</span></div>
+        <div class="list" id="refList"></div>
+      </div>
+    </section>
+
+    <!-- EQUIPE -->
+    <section data-view="equipe" hidden>
+      <div class="top"><div><h1>Equipe</h1><span class="sm muted">Quem tem acesso e o que cada um entregou no mês</span></div><button class="btn" type="button" id="inviteBtn">+ Convidar membro</button></div>
+      <form class="card" id="inviteForm" hidden style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
+        <label class="field" for="ivName">Nome<input id="ivName" required></label>
+        <label class="field" for="ivMail">E-mail<input id="ivMail" type="email" required></label>
+        <label class="field" for="ivRole">Acesso<select id="ivRole"><option>Equipe de campo</option><option>Escritório</option><option>Administrador</option></select></label>
+        <div class="toolbar"><button class="btn" type="submit">Enviar convite</button><button class="btn ghost" type="button" id="cancelInvite">Cancelar</button></div>
+      </form>
+      <div class="grid g-1-1">
+        <div class="card"><div class="card-h"><h2>Membros</h2></div><div class="list" id="teamList"></div></div>
+        <div class="card"><div class="card-h"><h2>Visitas feitas em outubro</h2></div><div class="bars" id="teamBars"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h2>Agenda de hoje</h2></div><div class="list" id="todayFull"></div></div>
+    </section>
+
+    <!-- SUPORTE -->
+    <section data-view="suporte" hidden>
+      <div class="top"><div><h1>Suporte</h1><span class="sm muted">Mensagens dos clientes pelo app</span></div></div>
+      <div class="inbox">
+        <div class="card" style="padding:8px;display:flex;flex-direction:column;gap:2px" id="convList"></div>
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <div class="between" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b id="convName"></b><br><span class="xs muted" id="convMeta"></span></div><button class="btn ghost tiny" type="button" id="resolveConv">Marcar como resolvida</button></div>
+          <div class="msgs" id="convMsgs" aria-live="polite"></div>
+          <form id="replyForm" style="display:flex;gap:8px"><label for="replyInput" style="position:absolute;left:-9999px">Resposta</label><input class="search" id="replyInput" style="max-width:none" placeholder="Escreva a resposta" autocomplete="off"><button class="btn" type="submit">Responder</button></form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  const $ = (s) => document.querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const usd = (n) => 'US$ ' + Math.round(n).toLocaleString('pt-BR');
+  const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
+
+  // Acesso: só entra com sessão de administrador (demonstração).
+  if (store.get('fsh-session') !== 'admin') { location.replace('/#entrar'); return; }
+  $('#logout').addEventListener('click', () => store.del('fsh-session'));
+
+  const ICON = {
+    ok:'<svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6.5 5,9 10,3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    warn:'<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 11 10.5H1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><line x1="6" y1="5" x2="6" y2="7.3" stroke="currentColor" stroke-width="1.6"/></svg>',
+    crit:'<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="6" y1="3.6" x2="6" y2="6.4" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="8.3" r=".9" fill="currentColor"/></svg>',
+    info:'<svg viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>'
+  };
+  const badge = (kind, text) => `<span class="badge b-${kind}">${ICON[kind] || ''}${esc(text)}</span>`;
+  function toast(t){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2600); }
+
+  // ---------- DADOS DE EXEMPLO ----------
+  const PLANS = { essential:{ name:'Essential Care', price:249 }, premium:{ name:'Premium', price:499 }, vip:{ name:'VIP', price:999 } };
+  const clients = [
+    { id:1, name:'Ana Souza', since:'03/2025', pay:'ok' },
+    { id:2, name:'Carlos Mendes', since:'11/2024', pay:'ok' },
+    { id:3, name:'Juliana Prado', since:'06/2025', pay:'due' },
+    { id:4, name:'Ricardo Alves', since:'02/2024', pay:'ok' },
+    { id:5, name:'Fernanda Lima', since:'08/2025', pay:'ok' },
+    { id:6, name:'Marcos Teixeira', since:'09/2023', pay:'ok' },
+    { id:7, name:'Patrícia Rocha', since:'01/2026', pay:'due' },
+    { id:8, name:'Bruno Carvalho', since:'04/2026', pay:'late' },
+    { id:9, name:'Camila Duarte', since:'07/2026', pay:'ok' },
+    { id:10, name:'Daniel Moreira', since:'05/2025', pay:'ok' },
+    { id:11, name:'Helena Costa', since:'10/2025', pay:'late' },
+    { id:12, name:'Gustavo Ribeiro', since:'09/2026', pay:'due' },
+    { id:13, name:'Mark Thompson', since:'03/2026', pay:'ok' },
+    { id:14, name:'Sarah Mitchell', since:'10/2026', pay:'due' }
+  ];
+  const props = [
+    { id:'p1', client:1, name:'Casa em Windermere', city:'Orlando', plan:'premium', use:'Airbnb', last:'22/10', status:'attn' },
+    { id:'p2', client:1, name:'Apartamento em Brickell', city:'Miami', plan:'essential', use:'Família', last:'12/10', status:'ok' },
+    { id:'p3', client:2, name:'Villa em Kissimmee', city:'Kissimmee', plan:'vip', use:'Airbnb', last:'23/10', status:'ok' },
+    { id:'p4', client:3, name:'Townhome em Lake Nona', city:'Orlando', plan:'essential', use:'Fechado', last:'27/10', status:'ok' },
+    { id:'p5', client:4, name:'Casa em Celebration', city:'Orlando', plan:'premium', use:'Família', last:'27/10', status:'ok' },
+    { id:'p6', client:4, name:'Condo em Sunny Isles', city:'Miami', plan:'premium', use:'Aluguel longo', last:'20/10', status:'ok' },
+    { id:'p7', client:5, name:'Apartamento em Brickell', city:'Miami', plan:'premium', use:'Família', last:'21/10', status:'attn' },
+    { id:'p8', client:6, name:'Casa em Dr. Phillips', city:'Orlando', plan:'vip', use:'Família', last:'26/10', status:'ok' },
+    { id:'p9', client:7, name:'Villa em Davenport', city:'Orlando', plan:'premium', use:'Airbnb', last:'19/10', status:'late' },
+    { id:'p10', client:8, name:'Condo em Doral', city:'Miami', plan:'essential', use:'Fechado', last:'05/10', status:'ok' },
+    { id:'p11', client:9, name:'Casa em Winter Garden', city:'Orlando', plan:'premium', use:'Família', last:'24/10', status:'ok' },
+    { id:'p12', client:10, name:'Apartamento em Miami Beach', city:'Miami', plan:'vip', use:'VRBO', last:'26/10', status:'attn' },
+    { id:'p13', client:11, name:'Townhome em Kissimmee', city:'Kissimmee', plan:'essential', use:'Airbnb', last:'08/10', status:'ok' },
+    { id:'p14', client:11, name:'Casa em Clermont', city:'Orlando', plan:'essential', use:'Fechado', last:'15/10', status:'ok' },
+    { id:'p15', client:12, name:'Casa em Windermere', city:'Orlando', plan:'premium', use:'Família', last:'—', status:'new' },
+    { id:'p16', client:13, name:'Condo em Aventura', city:'Miami', plan:'premium', use:'Aluguel longo', last:'22/10', status:'ok' },
+    { id:'p17', client:14, name:'Casa em Winter Park', city:'Orlando', plan:'essential', use:'Família', last:'—', status:'new' }
+  ];
+  const tickets = [
+    { id:101, title:'Vazamento na torneira da cozinha', prop:'p1', prio:'alta', opened:'24/10', who:'Matheus', status:'andamento' },
+    { id:102, title:'Limpeza do dreno do AC da sala', prop:'p1', prio:'normal', opened:'22/10', who:'Matheus', status:'autorizacao' },
+    { id:103, title:'Infiltração no teto do banheiro', prop:'p7', prio:'alta', opened:'21/10', who:'Jessica', status:'andamento' },
+    { id:104, title:'Fechadura eletrônica sem bateria', prop:'p12', prio:'urgente', opened:'26/10', who:'—', status:'recebido' },
+    { id:105, title:'Trocar filtro da piscina', prop:'p3', prio:'normal', opened:'25/10', who:'Matheus', status:'andamento' },
+    { id:106, title:'Pintura da varanda', prop:'p8', prio:'baixa', opened:'18/10', who:'Jessica', status:'autorizacao' },
+    { id:107, title:'Geladeira fazendo barulho', prop:'p9', prio:'urgente', opened:'27/10', who:'—', status:'recebido' },
+    { id:108, title:'Lâmpada queimada na varanda', prop:'p1', prio:'baixa', opened:'16/10', who:'Matheus', status:'resolvido' },
+    { id:109, title:'Trocar fechadura da porta de serviço', prop:'p2', prio:'normal', opened:'07/10', who:'Matheus', status:'resolvido' },
+    { id:110, title:'Instalar suporte de TV', prop:'p16', prio:'baixa', opened:'10/10', who:'Matheus', status:'resolvido' }
+  ];
+  const inspections = [
+    { date:'26/10 seg', prop:'p8', who:'Jessica', photos:22, result:'ok' },
+    { date:'26/10 seg', prop:'p12', who:'Jessica', photos:19, result:'attn' },
+    { date:'27/10 ter', prop:'p5', who:'Matheus', photos:0, result:'andamento' },
+    { date:'27/10 ter', prop:'p4', who:'Matheus', photos:0, result:'agendada' },
+    { date:'28/10 qua', prop:'p11', who:'Matheus', photos:0, result:'agendada' },
+    { date:'28/10 qua', prop:'p6', who:'Jessica', photos:0, result:'agendada' },
+    { date:'29/10 qui', prop:'p3', who:'Matheus', photos:0, result:'agendada' },
+    { date:'30/10 sex', prop:'p16', who:'Jessica', photos:0, result:'agendada' },
+    { date:'30/10 sex', prop:'p13', who:'Matheus', photos:0, result:'agendada' },
+    { date:'19/10 seg', prop:'p9', who:'Matheus', photos:0, result:'atrasada' }
+  ];
+  const leads = [
+    { name:'Roberto Nunes', src:'Facebook Ads', city:'Orlando', plan:'Premium', when:'27/10', stage:'novo' },
+    { name:'Luciana Martins', src:'Instagram', city:'Miami', plan:'VIP', when:'26/10', stage:'novo' },
+    { name:'Thiago Barros', src:'Indicação', city:'Kissimmee', plan:'Premium', when:'25/10', stage:'avaliacao' },
+    { name:'Jennifer Lopez Ruiz', src:'Site', city:'Miami', plan:'Essential Care', when:'24/10', stage:'proposta' },
+    { name:'Felipe Araújo', src:'Facebook Ads', city:'Orlando', plan:'Premium', when:'22/10', stage:'proposta' },
+    { name:'Renata Gomes', src:'Indicação', city:'Orlando', plan:'VIP', when:'20/10', stage:'avaliacao' },
+    { name:'Eduardo Pires', src:'Facebook Ads', city:'Miami', plan:'Premium', when:'18/10', stage:'perdido' }
+  ];
+  const funnel = [ ['Pedidos de avaliação', 24], ['Avaliações feitas', 15], ['Propostas enviadas', 11], ['Contratos fechados', 6] ];
+  const sources = [ ['Facebook Ads', 11], ['Indicação', 6], ['Instagram', 4], ['Site', 3] ];
+  const referrals = [
+    { who:'Ana Souza', ref:'Gustavo Ribeiro', status:'pagar', note:'Contrato anual assinado em 09/2026' },
+    { who:'Ricardo Alves', ref:'Thiago Barros', status:'aguardando', note:'Avaliação marcada' },
+    { who:'Marcos Teixeira', ref:'Renata Gomes', status:'aguardando', note:'Avaliação marcada' },
+    { who:'Carlos Mendes', ref:'Camila Duarte', status:'pago', note:'Pago em 08/2026' }
+  ];
+  const team = [
+    { name:'Jessica Freitas', role:'Administradora · fundadora', visits:21, access:'Administrador' },
+    { name:'Matheus Freitas', role:'Operações · campo', visits:38, access:'Administrador' }
+  ];
+  const today = [
+    { time:'09:00', who:'Matheus', what:'Inspeção quinzenal', prop:'p5', status:'andamento' },
+    { time:'11:00', who:'Matheus', what:'Acompanhar encanador', prop:'p1', status:'agendada' },
+    { time:'14:00', who:'Matheus', what:'Limpeza de virada', prop:'p3', status:'agendada' },
+    { time:'15:30', who:'Jessica', what:'Avaliação de novo cliente', prop:null, place:'Thiago Barros · Kissimmee', status:'agendada' },
+    { time:'16:30', who:'Matheus', what:'Inspeção mensal', prop:'p4', status:'agendada' }
+  ];
+  const convs = [
+    { id:1, client:'Ana Souza', topic:'Dúvida sobre fatura', unread:true, open:true, msgs:[ { me:false, t:'Oi! A fatura de novembro veio com os dois imóveis juntos?', when:'09:40' } ] },
+    { id:2, client:'Mark Thompson', topic:'Acesso ao app', unread:true, open:true, msgs:[ { me:false, t:'Hi, I can’t find the inspection photos from last week.', when:'08:15' } ] },
+    { id:3, client:'Patrícia Rocha', topic:'Mudar de plano', unread:false, open:true, msgs:[ { me:false, t:'Quero passar a Villa para o VIP a partir de dezembro.', when:'Ontem' }, { me:true, t:'Perfeito, Patrícia! Já preparo a mudança e te aviso.', when:'Ontem' } ] },
+    { id:4, client:'Daniel Moreira', topic:'Fechadura eletrônica', unread:false, open:false, msgs:[ { me:false, t:'Hóspedes não conseguem entrar.', when:'26/10' }, { me:true, t:'Abrimos o chamado e o Matheus vai até lá hoje.', when:'26/10' } ] }
+  ];
+  const invoices = [];
+  clients.forEach((c) => {
+    const total = props.filter((p) => p.client === c.id).reduce((s,p) => s + PLANS[p.plan].price, 0);
+    if (c.since !== '10/2026') invoices.push({ client:c.id, ref:'Planos · outubro', due:'01/10', value:total, status: c.pay === 'late' ? 'late' : 'paid' });
+    invoices.push({ client:c.id, ref:'Planos · novembro', due:'01/11', value:total, status:'open' });
+  });
+  invoices.push({ client:1, ref:'Reparo · lâmpada da varanda', due:'25/10', value:85, status:'paid' });
+  invoices.push({ client:4, ref:'Reparo · pintura do muro', due:'05/11', value:640, status:'open' });
+
+  const clientOf = (id) => clients.find((c) => c.id === id);
+  const propOf = (id) => props.find((p) => p.id === id);
+  const clientProps = (id) => props.filter((p) => p.client === id);
+  const mrr = () => props.reduce((s,p) => s + PLANS[p.plan].price, 0);
+
+  // ---------- NAVEGAÇÃO ----------
+  const VIEWS = [
+    ['visao','Visão geral','<path d="M4 13h6V4H4zM14 20h6V11h-6zM4 20h6v-4H4zM14 7h6V4h-6z"/>'],
+    ['clientes','Clientes','<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/>'],
+    ['imoveis','Imóveis','<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>'],
+    ['chamados','Chamados','<path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/>'],
+    ['inspecoes','Inspeções','<rect x="5" y="4" width="14" height="17" rx="2"/><polyline points="9,12 11,14 15,10"/>'],
+    ['financeiro','Financeiro','<rect x="3" y="6" width="18" height="13" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>'],
+    ['comercial','Comercial','<polyline points="3,17 9,11 13,15 21,7"/><polyline points="15,7 21,7 21,13"/>'],
+    ['equipe','Equipe','<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'],
+    ['suporte','Suporte','<path d="M4 5h16v11H9l-5 4z"/>']
+  ];
+  function renderNav(v){
+    const pills = { chamados: tickets.filter((t) => t.status === 'recebido').length, suporte: convs.filter((c) => c.unread).length };
+    $('#nav').innerHTML = VIEWS.map(([id,label,icon]) => `<a href="#${id}" ${id===v?'aria-current="page"':''}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg>${label}${pills[id] ? `<span class="pill">${pills[id]}</span>` : ''}</a>`).join('');
+  }
+  function show(){
+    let v = location.hash.replace('#','');
+    if (!VIEWS.some((x) => x[0] === v)) v = 'visao';
+    document.querySelectorAll('section[data-view]').forEach((s) => s.hidden = s.dataset.view !== v);
+    renderNav(v);
+    ({ visao:renderOverview, clientes:renderClients, imoveis:renderProps, chamados:renderTickets, inspecoes:renderInspections, financeiro:renderFinance, comercial:renderSales, equipe:renderTeam, suporte:renderSupport })[v]();
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+
+  // ---------- COMPONENTES ----------
+  function bars(el, rows, opts){
+    const o = opts || {};
+    const max = Math.max(...rows.map((r) => r[1]), 1);
+    el.innerHTML = rows.map(([label, v, extra]) => `<div class="bar-row" title="${esc(label)}: ${o.fmt ? o.fmt(v) : v}"><span class="${o.labelClass||'muted'}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(label)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2, v/max*100)}%"></div></div><b class="num" style="text-align:right">${o.fmt ? o.fmt(v) : v}${extra ? `<span class="xs faint" style="font-weight:500"> ${extra}</span>` : ''}</b></div>`).join('');
+  }
+  function kpiHtml(k){ return `<div class="card kpi"><span class="label">${k.label}</span><span class="value">${k.value}</span>${k.delta ? `<span class="delta ${k.cls||'muted'}">${k.delta}</span>` : ''}</div>`; }
+
+  function lineChart(el, labels, values){
+    const W = 640, H = 300, L = 52, R = 16, T = 16, B = 30;
+    const maxV = Math.ceil(Math.max(...values) / 2000) * 2000;
+    const x = (i) => L + i * (W - L - R) / (values.length - 1);
+    const y = (v) => T + (H - T - B) * (1 - v / maxV);
+    const ticks = []; for (let t = 0; t <= maxV; t += 2000) ticks.push(t);
+    const path = values.map((v,i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+    const area = path + ` L${x(values.length-1)} ${y(0)} L${x(0)} ${y(0)} Z`;
+    const last = values.length - 1;
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Receita recorrente mensal de ${labels[0]} a ${labels[last]}: de ${usd(values[0])} para ${usd(values[last])}">
+      <defs><linearGradient id="mrrFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#D9B979" stop-opacity=".28"/><stop offset="1" stop-color="#D9B979" stop-opacity="0"/></linearGradient></defs>
+      ${ticks.map((t) => `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(255,255,255,.07)"/><text x="${L-10}" y="${y(t)+4}" text-anchor="end" font-size="11" fill="rgba(244,241,234,.5)">${t ? (t/1000)+' mil' : '0'}</text>`).join('')}
+      ${labels.map((l,i) => `<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="rgba(244,241,234,.6)">${l}</text>`).join('')}
+      <path d="${area}" fill="url(#mrrFill)"/>
+      <path d="${path}" fill="none" stroke="#D9B979" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <line id="cross" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="rgba(244,241,234,.35)" stroke-dasharray="3 3" visibility="hidden"/>
+      <circle cx="${x(last)}" cy="${y(values[last])}" r="5" fill="#D9B979" stroke="#101D2C" stroke-width="2"/>
+      <text x="${x(last)}" y="${y(values[last])-14}" text-anchor="end" font-size="12" font-weight="700" fill="#F4F1EA">${usd(values[last])}</text>
+      <circle id="hoverDot" r="5" fill="#D9B979" stroke="#101D2C" stroke-width="2" visibility="hidden"/>
+      ${values.map((v,i) => `<rect data-i="${i}" x="${x(i) - (W-L-R)/(values.length-1)/2}" y="${T}" width="${(W-L-R)/(values.length-1)}" height="${H-T-B}" fill="transparent"/>`).join('')}
+    </svg><div class="tip" hidden></div>`;
+    const svg = el.querySelector('svg'), tip = el.querySelector('.tip'), cross = svg.querySelector('#cross'), dot = svg.querySelector('#hoverDot');
+    svg.querySelectorAll('rect[data-i]').forEach((r) => {
+      r.addEventListener('mouseenter', () => {
+        const i = +r.dataset.i, px = x(i), py = y(values[i]);
+        cross.setAttribute('x1', px); cross.setAttribute('x2', px); cross.setAttribute('visibility','visible');
+        dot.setAttribute('cx', px); dot.setAttribute('cy', py); dot.setAttribute('visibility','visible');
+        const sc = svg.getBoundingClientRect().width / W;
+        const diff = i ? values[i] - values[i-1] : 0;
+        tip.innerHTML = `<b>${labels[i]} 2026</b><br><span class="num">${usd(values[i])}</span>${i ? `<br><span class="${diff>=0?'up':'down'}">${diff>=0?'+':''}${usd(diff).replace('US$ ','US$ ')} no mês</span>` : ''}`;
+        tip.style.left = (px * sc) + 'px'; tip.style.top = (py * sc) + 'px'; tip.hidden = false;
+      });
+    });
+    svg.addEventListener('mouseleave', () => { tip.hidden = true; cross.setAttribute('visibility','hidden'); dot.setAttribute('visibility','hidden'); });
+  }
+
+  const STATUS_PROP = { ok:['ok','Em ordem'], attn:['warn','Atenção'], late:['crit','Inspeção atrasada'], new:['info','Onboarding'] };
+  const PAY = { ok:['ok','Em dia'], due:['info','A vencer'], late:['crit','Em atraso'] };
+  const TK = { recebido:['crit','Novo'], autorizacao:['warn','Aguardando cliente'], andamento:['info','Em andamento'], resolvido:['ok','Resolvido'] };
+  const PRIO = { urgente:['crit','Urgente'], alta:['warn','Alta'], normal:['neutral','Normal'], baixa:['neutral','Baixa'] };
+
+  // ---------- VISÃO GERAL ----------
+  function renderOverview(){
+    const m = mrr();
+    const history = [m - 2503, m - 2004, m - 1505, m - 1004, m - 499, m];
+    const growth = (m - history[4]) / history[4] * 100;
+    const openTk = tickets.filter((t) => t.status !== 'resolvido');
+    const urgent = openTk.filter((t) => t.prio === 'urgente').length;
+    const lateInv = invoices.filter((i) => i.status === 'late');
+    const lateSum = lateInv.reduce((s,i) => s + i.value, 0);
+    const weekDone = inspections.filter((i) => i.result === 'ok' || i.result === 'attn').length;
+    const weekTotal = inspections.filter((i) => i.result !== 'atrasada').length;
+    $('#kpis').innerHTML = [
+      { label:'Receita recorrente', value:usd(m), delta:'+' + growth.toFixed(1).replace('.',',') + '% vs setembro', cls:'up' },
+      { label:'Clientes ativos', value:clients.length, delta:'+2 em outubro', cls:'up' },
+      { label:'Imóveis sob gestão', value:props.length, delta:props.filter((p)=>p.status==='new').length + ' em onboarding', cls:'muted' },
+      { label:'Chamados abertos', value:openTk.length, delta:urgent + ' urgentes sem responsável', cls: urgent ? 'down' : 'muted' },
+      { label:'Inspeções da semana', value:weekDone + ' de ' + weekTotal, delta:'1 atrasada', cls:'down' },
+      { label:'Em atraso', value:usd(lateSum), delta:lateInv.length + ' faturas', cls: lateSum ? 'down' : 'muted' }
+    ].map(kpiHtml).join('');
+    lineChart($('#mrrChart'), ['mai','jun','jul','ago','set','out'], history);
+
+    const attn = [];
+    tickets.filter((t) => t.status === 'recebido').forEach((t) => attn.push({ k:'crit', t:t.title, s:propOf(t.prop).name + ' · sem responsável', go:'chamados' }));
+    lateInv.forEach((i) => attn.push({ k:'crit', t:'Fatura em atraso · ' + usd(i.value), s:clientOf(i.client).name + ' · venceu ' + i.due, go:'financeiro' }));
+    inspections.filter((i) => i.result === 'atrasada').forEach((i) => attn.push({ k:'warn', t:'Inspeção atrasada', s:propOf(i.prop).name + ' · prevista ' + i.date.split(' ')[0], go:'inspecoes' }));
+    tickets.filter((t) => t.status === 'autorizacao').forEach((t) => attn.push({ k:'warn', t:'Aguardando autorização do cliente', s:t.title, go:'chamados' }));
+    convs.filter((c) => c.unread).forEach((c) => attn.push({ k:'info', t:'Mensagem sem resposta', s:c.client + ' · ' + c.topic, go:'suporte' }));
+    $('#attnCount').innerHTML = attn.length + ' itens';
+    $('#attnList').innerHTML = attn.slice(0,6).map((a) => `<a class="li" href="#${a.go}" style="color:var(--fg)">${badge(a.k, a.k==='crit'?'Crítico':a.k==='warn'?'Atenção':'Info')}<span class="grow"><b class="sm">${esc(a.t)}</b><br><span class="xs muted">${esc(a.s)}</span></span></a>`).join('');
+
+    const byPlan = ['essential','premium','vip'].map((k) => [PLANS[k].name, props.filter((p)=>p.plan===k).length, usd(props.filter((p)=>p.plan===k).length * PLANS[k].price)]);
+    bars($('#planBars'), byPlan);
+    const regions = ['Orlando','Miami','Kissimmee'].map((c) => [c, props.filter((p)=>p.city===c).reduce((s,p)=>s+PLANS[p.plan].price,0)]);
+    bars($('#regionBars'), regions, { fmt:usd });
+    bars($('#funnelMini'), funnel.map(([l,v]) => [l, v]));
+
+    $('#todayList').innerHTML = today.map((t) => `<div class="li"><b class="num sm" style="width:46px">${t.time}</b><span class="grow"><b class="sm">${esc(t.what)}</b><br><span class="xs muted">${esc(t.prop ? propOf(t.prop).name : t.place)} · ${t.who}</span></span>${t.status==='andamento'?badge('info','Em andamento'):badge('neutral','Agendada')}</div>`).join('');
+    const feed = [
+      ['ok','Relatório enviado','Casa em Dr. Phillips · Jessica · 26/10 17:40'],
+      ['warn','Ponto de atenção na inspeção','Apartamento em Miami Beach · AC da suíte · 26/10'],
+      ['info','Novo lead do Facebook Ads','Roberto Nunes · Orlando · hoje 08:02'],
+      ['ok','Plano contratado pelo app','Sarah Mitchell · Essential Care · 25/10'],
+      ['ok','Fatura paga','Mark Thompson · US$ 499 · 24/10']
+    ];
+    $('#feed').innerHTML = feed.map(([k,t,s]) => `<div class="li"><i class="dot" style="margin-top:7px;background:var(--${k==='ok'?'ok':k==='warn'?'warn':'info'})"></i><span class="grow"><b class="sm">${t}</b><br><span class="xs muted">${s}</span></span></div>`).join('');
+  }
+
+  // ---------- CLIENTES ----------
+  let cliQ = '', cliF = 'todos';
+  function renderClients(){
+    const filters = [['todos','Todos'],['ok','Em dia'],['due','A vencer'],['late','Em atraso']];
+    $('#cliFilter').innerHTML = filters.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${cliF===k}">${l}</button>`).join('');
+    const rows = clients.filter((c) => (cliF==='todos' || c.pay===cliF) && (!cliQ || (c.name + ' ' + clientProps(c.id).map((p)=>p.name).join(' ')).toLowerCase().includes(cliQ)));
+    $('#cliSub').textContent = clients.length + ' clientes · ' + props.length + ' imóveis · ' + usd(mrr()) + '/mês';
+    $('#cliBody').innerHTML = rows.length ? rows.map((c) => { const ps = clientProps(c.id); const total = ps.reduce((s,p)=>s+PLANS[p.plan].price,0); return `<tr><td><b>${esc(c.name)}</b></td><td>${ps.map((p)=>esc(p.name)+' <span class="faint">· '+p.city+'</span>').join('<br>')}</td><td>${[...new Set(ps.map((p)=>PLANS[p.plan].name))].join(', ')}</td><td class="r num"><b>${usd(total)}</b></td><td>${badge(PAY[c.pay][0], PAY[c.pay][1])}</td><td class="muted">${c.since}</td></tr>`; }).join('') : '<tr><td colspan="6" class="empty">Nenhum cliente encontrado.</td></tr>';
+  }
+  $('#cliSearch').addEventListener('input', (e) => { cliQ = e.target.value.trim().toLowerCase(); renderClients(); });
+  $('#cliFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { cliF = b.dataset.f; renderClients(); } });
+  $('#newClient').onclick = () => { $('#clientForm').hidden = false; $('#ncName').focus(); };
+  $('#cancelClient').onclick = () => { $('#clientForm').hidden = true; };
+  $('#clientForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = clients.length + 1;
+    clients.push({ id, name:$('#ncName').value.trim(), since:'10/2026', pay:'due' });
+    props.push({ id:'p' + (props.length + 1), client:id, name:$('#ncProp').value.trim(), city:$('#ncCity').value, plan:$('#ncPlan').value, use:'—', last:'—', status:'new' });
+    invoices.push({ client:id, ref:'Planos · novembro', due:'01/11', value:PLANS[$('#ncPlan').value].price, status:'open' });
+    $('#clientForm').reset(); $('#clientForm').hidden = true; renderClients(); toast('Cliente cadastrado. O acesso ao app é enviado por e-mail.');
+  });
+
+  // ---------- IMÓVEIS ----------
+  let propQ = '', propF = 'todos';
+  function renderProps(){
+    const filters = [['todos','Todos'],['Orlando','Orlando'],['Miami','Miami'],['Kissimmee','Kissimmee']];
+    $('#propFilter').innerHTML = filters.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${propF===k}">${l}</button>`).join('');
+    const rows = props.filter((p) => (propF==='todos' || p.city===propF) && (!propQ || (p.name + ' ' + clientOf(p.client).name).toLowerCase().includes(propQ)));
+    const attn = props.filter((p) => p.status === 'attn' || p.status === 'late').length;
+    $('#propSub').textContent = props.length + ' imóveis · ' + attn + ' precisam de atenção';
+    $('#propBody').innerHTML = rows.length ? rows.map((p) => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(clientOf(p.client).name)}</td><td>${p.city}</td><td>${PLANS[p.plan].name}</td><td class="muted">${p.use}</td><td class="num muted">${p.last}</td><td>${badge(STATUS_PROP[p.status][0], STATUS_PROP[p.status][1])}</td></tr>`).join('') : '<tr><td colspan="7" class="empty">Nenhum imóvel encontrado.</td></tr>';
+  }
+  $('#propSearch').addEventListener('input', (e) => { propQ = e.target.value.trim().toLowerCase(); renderProps(); });
+  $('#propFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { propF = b.dataset.f; renderProps(); } });
+
+  // ---------- CHAMADOS ----------
+  let tkF = 'abertos';
+  function renderTickets(){
+    const open = tickets.filter((t) => t.status !== 'resolvido');
+    $('#tkSub').textContent = open.length + ' abertos · ' + tickets.filter((t)=>t.status==='resolvido').length + ' resolvidos em outubro';
+    $('#tkKpis').innerHTML = [
+      { label:'Novos sem responsável', value:tickets.filter((t)=>t.status==='recebido').length, cls:'down', delta:'Atribuir hoje' },
+      { label:'Em andamento', value:tickets.filter((t)=>t.status==='andamento').length },
+      { label:'Aguardando cliente', value:tickets.filter((t)=>t.status==='autorizacao').length, delta:'Autorização de reparo' },
+      { label:'Resolvidos no mês', value:tickets.filter((t)=>t.status==='resolvido').length, cls:'up', delta:'Tempo médio: 2,4 dias' }
+    ].map(kpiHtml).join('');
+    const filters = [['abertos','Abertos'],['recebido','Novos'],['andamento','Em andamento'],['autorizacao','Aguardando cliente'],['resolvido','Resolvidos'],['todos','Todos']];
+    $('#tkFilter').innerHTML = filters.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${tkF===k}">${l}</button>`).join('');
+    const order = { urgente:0, alta:1, normal:2, baixa:3 };
+    const rows = tickets.filter((t) => tkF==='todos' || (tkF==='abertos' ? t.status!=='resolvido' : t.status===tkF)).sort((a,b) => order[a.prio]-order[b.prio]);
+    $('#tkBody').innerHTML = rows.length ? rows.map((t) => `<tr><td><b>${esc(t.title)}</b><br><span class="xs faint">#${t.id}</span></td><td>${esc(propOf(t.prop).name)}<br><span class="xs faint">${esc(clientOf(propOf(t.prop).client).name)}</span></td><td>${badge(PRIO[t.prio][0], PRIO[t.prio][1])}</td><td class="num muted">${t.opened}</td><td><label class="sr" for="who${t.id}" style="position:absolute;left:-9999px">Responsável</label><select class="inline" id="who${t.id}" data-who="${t.id}">${['—','Matheus','Jessica'].map((w)=>`<option ${t.who===w?'selected':''}>${w}</option>`).join('')}</select></td><td><label for="st${t.id}" style="position:absolute;left:-9999px">Status</label><select class="inline" id="st${t.id}" data-st="${t.id}">${Object.keys(TK).map((k)=>`<option value="${k}" ${t.status===k?'selected':''}>${TK[k][1]}</option>`).join('')}</select></td></tr>`).join('') : '<tr><td colspan="6" class="empty">Nenhum chamado aqui.</td></tr>';
+  }
+  $('#tkFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { tkF = b.dataset.f; renderTickets(); } });
+  $('#tkBody').addEventListener('change', (e) => {
+    const s = e.target;
+    if (s.dataset.who) { const t = tickets.find((x) => x.id === +s.dataset.who); t.who = s.value; if (t.status === 'recebido' && s.value !== '—') t.status = 'andamento'; toast('Responsável atualizado. O cliente recebe um aviso no app.'); }
+    if (s.dataset.st) { tickets.find((x) => x.id === +s.dataset.st).status = s.value; toast('Status atualizado. O cliente recebe um aviso no app.'); }
+    renderTickets(); renderNav('chamados');
+  });
+
+  // ---------- INSPEÇÕES ----------
+  function renderInspections(){
+    const done = inspections.filter((i) => i.result==='ok' || i.result==='attn');
+    $('#inKpis').innerHTML = [
+      { label:'Feitas na semana', value:done.length },
+      { label:'Agendadas', value:inspections.filter((i)=>i.result==='agendada').length + inspections.filter((i)=>i.result==='andamento').length },
+      { label:'Com pontos de atenção', value:inspections.filter((i)=>i.result==='attn').length, cls:'down', delta:'Reparo a propor ao cliente' },
+      { label:'Atrasadas', value:inspections.filter((i)=>i.result==='atrasada').length, cls:'down', delta:'Reagendar' }
+    ].map(kpiHtml).join('');
+    const R = { ok:['ok','Tudo em ordem'], attn:['warn','Pontos de atenção'], agendada:['neutral','Agendada'], andamento:['info','Em andamento'], atrasada:['crit','Atrasada'] };
+    $('#inBody').innerHTML = inspections.map((i) => { const p = propOf(i.prop); return `<tr><td class="num">${i.date}</td><td><b>${esc(p.name)}</b><br><span class="xs faint">${esc(clientOf(p.client).name)}</span></td><td>${PLANS[p.plan].name}</td><td>${i.who}</td><td class="r num">${i.photos || '—'}</td><td>${badge(R[i.result][0], R[i.result][1])}</td></tr>`; }).join('');
+  }
+
+  // ---------- FINANCEIRO ----------
+  let finF = 'novembro';
+  function renderFinance(){
+    const nov = invoices.filter((i) => i.due.endsWith('/11'));
+    const paidOct = invoices.filter((i) => i.status === 'paid').reduce((s,i)=>s+i.value,0);
+    const late = invoices.filter((i) => i.status === 'late');
+    $('#finKpis').innerHTML = [
+      { label:'Recebido em outubro', value:usd(paidOct), cls:'up', delta:'Planos e serviços avulsos' },
+      { label:'A receber em novembro', value:usd(nov.filter((i)=>i.status==='open').reduce((s,i)=>s+i.value,0)), delta:nov.length + ' faturas' },
+      { label:'Em atraso', value:usd(late.reduce((s,i)=>s+i.value,0)), cls:'down', delta:late.length + ' faturas' },
+      { label:'Ticket médio por cliente', value:usd(mrr() / clients.length), delta:'por mês' }
+    ].map(kpiHtml).join('');
+    const filters = [['novembro','Novembro'],['late','Em atraso'],['paid','Pagas'],['todas','Todas']];
+    $('#finFilter').innerHTML = filters.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${finF===k}">${l}</button>`).join('');
+    const S = { paid:['ok','Paga'], open:['info','A vencer'], late:['crit','Em atraso'] };
+    const rows = invoices.filter((i) => finF==='todas' || (finF==='novembro' ? i.due.endsWith('/11') : i.status===finF));
+    $('#finBody').innerHTML = rows.map((i, n) => `<tr><td><b>${esc(clientOf(i.client).name)}</b></td><td>${esc(i.ref)}</td><td class="num muted">${i.due}</td><td class="r num"><b>${usd(i.value)}</b></td><td>${badge(S[i.status][0], S[i.status][1])}</td><td class="r">${i.status==='late' ? `<button class="btn ghost tiny" type="button" data-remind="${invoices.indexOf(i)}">Enviar lembrete</button>` : i.status==='open' ? `<button class="btn ghost tiny" type="button" data-paid="${invoices.indexOf(i)}">Marcar paga</button>` : ''}</td></tr>`).join('');
+  }
+  $('#finFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { finF = b.dataset.f; renderFinance(); } });
+  $('#finBody').addEventListener('click', (e) => {
+    const r = e.target.closest('[data-remind]'), p = e.target.closest('[data-paid]');
+    if (r) toast('Lembrete enviado para ' + clientOf(invoices[+r.dataset.remind].client).name + ' por e-mail e WhatsApp.');
+    if (p) { invoices[+p.dataset.paid].status = 'paid'; renderFinance(); toast('Fatura marcada como paga.'); }
+  });
+
+  // ---------- COMERCIAL ----------
+  const STAGE = { novo:['crit','Novo · responder'], avaliacao:['info','Avaliação marcada'], proposta:['warn','Proposta enviada'], cliente:['ok','Virou cliente'], perdido:['neutral','Perdido'] };
+  function renderSales(){
+    const first = funnel[0][1];
+    bars($('#funnel'), funnel.map(([l,v]) => [l, v, Math.round(v/first*100) + '%']));
+    bars($('#sourceBars'), sources);
+    $('#leadBody').innerHTML = leads.map((l, i) => `<tr><td><b>${esc(l.name)}</b></td><td>${l.src}</td><td>${l.city}</td><td>${l.plan}</td><td class="num muted">${l.when}</td><td><label for="lead${i}" style="position:absolute;left:-9999px">Etapa</label><select class="inline" id="lead${i}" data-lead="${i}">${Object.keys(STAGE).map((k)=>`<option value="${k}" ${l.stage===k?'selected':''}>${STAGE[k][1]}</option>`).join('')}</select></td></tr>`).join('');
+    const RS = { pagar:['warn','Pagar US$ 300'], aguardando:['neutral','Aguardando contrato'], pago:['ok','Pago'] };
+    $('#refList').innerHTML = referrals.map((r) => `<div class="li"><span class="grow"><b class="sm">${esc(r.who)} indicou ${esc(r.ref)}</b><br><span class="xs muted">${esc(r.note)}</span></span>${badge(RS[r.status][0], RS[r.status][1])}</div>`).join('');
+  }
+  $('#leadBody').addEventListener('change', (e) => { const s = e.target.closest('[data-lead]'); if (s) { leads[+s.dataset.lead].stage = s.value; toast('Etapa do lead atualizada.'); } });
+
+  // ---------- EQUIPE ----------
+  function renderTeam(){
+    $('#teamList').innerHTML = team.map((m) => `<div class="li"><span class="avatar">${m.name.charAt(0)}</span><span class="grow"><b class="sm">${esc(m.name)}</b><br><span class="xs muted">${esc(m.role)}</span></span>${badge(m.access==='Administrador'?'neutral':'info', m.access)}</div>`).join('');
+    bars($('#teamBars'), team.map((m) => [m.name.split(' ')[0], m.visits]));
+    $('#todayFull').innerHTML = today.map((t) => `<div class="li"><b class="num sm" style="width:46px">${t.time}</b><span class="grow"><b class="sm">${esc(t.what)}</b><br><span class="xs muted">${esc(t.prop ? propOf(t.prop).name : t.place)}</span></span><span class="sm muted">${t.who}</span></div>`).join('');
+  }
+  $('#inviteBtn').onclick = () => { $('#inviteForm').hidden = false; $('#ivName').focus(); };
+  $('#cancelInvite').onclick = () => { $('#inviteForm').hidden = true; };
+  $('#inviteForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    team.push({ name:$('#ivName').value.trim(), role:$('#ivRole').value + ' · convite enviado', visits:0, access:$('#ivRole').value });
+    $('#inviteForm').reset(); $('#inviteForm').hidden = true; renderTeam(); toast('Convite enviado por e-mail.');
+  });
+
+  // ---------- SUPORTE ----------
+  let convSel = 1;
+  const nowStr = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+  function renderSupport(){
+    const c = convs.find((x) => x.id === convSel);
+    c.unread = false;
+    $('#convList').innerHTML = convs.map((x) => `<button type="button" class="conv" data-conv="${x.id}" aria-pressed="${x.id===convSel}"><span style="display:flex;justify-content:space-between;gap:8px;width:100%"><b class="sm">${esc(x.client)}</b>${x.unread ? badge('info','Nova') : x.open ? '' : badge('ok','Resolvida')}</span><span class="xs muted">${esc(x.topic)}</span><span class="xs faint" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${esc(x.msgs[x.msgs.length-1].t)}</span></button>`).join('');
+    $('#convName').textContent = c.client;
+    $('#convMeta').textContent = c.topic + (c.open ? ' · aberta' : ' · resolvida');
+    $('#convMsgs').innerHTML = c.msgs.map((m) => `<div class="msg ${m.me?'me':'them'}">${esc(m.t)}<small>${m.me?'Five Star':esc(c.client)} · ${m.when}</small></div>`).join('');
+    $('#resolveConv').textContent = c.open ? 'Marcar como resolvida' : 'Reabrir';
+    renderNav('suporte');
+  }
+  $('#convList').addEventListener('click', (e) => { const b = e.target.closest('[data-conv]'); if (b) { convSel = +b.dataset.conv; renderSupport(); } });
+  $('#replyForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const t = $('#replyInput').value.trim(); if (!t) return;
+    convs.find((x) => x.id === convSel).msgs.push({ me:true, t, when:nowStr() });
+    $('#replyInput').value = ''; renderSupport(); toast('Resposta enviada. O cliente recebe um aviso no app.');
+  });
+  $('#resolveConv').onclick = () => { const c = convs.find((x) => x.id === convSel); c.open = !c.open; renderSupport(); };
+
+  show();
+})();
+</script>
+</body>
+</html>

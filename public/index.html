@@ -156,9 +156,10 @@ img{max-width:100%}
     <p class="muted">Acompanhe seus imóveis na Flórida, abra chamados e receba as atualizações da equipe.</p>
   </div>
   <form class="card big" id="loginForm" novalidate style="gap:14px;padding:18px">
-    <div class="seg" role="group" aria-label="Tipo de acesso">
+    <div class="seg" role="group" aria-label="Tipo de acesso" style="grid-template-columns:repeat(3,minmax(0,1fr))">
       <button type="button" id="roleOwner" aria-pressed="true">Cliente</button>
       <button type="button" id="roleTeam" aria-pressed="false">Equipe</button>
+      <button type="button" id="roleAdmin" aria-pressed="false">Admin</button>
     </div>
     <label class="field" for="loginEmail">E-mail<input id="loginEmail" type="email" autocomplete="email" placeholder="voce@email.com" value="ana@exemplo.com"></label>
     <label class="field" for="loginPass">Senha<span class="pw"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha" value="demo1234"><button type="button" id="togglePass" aria-controls="loginPass">Mostrar</button></span></label>
@@ -489,6 +490,7 @@ img{max-width:100%}
   // ROUTER
   function show(){
     let v = location.hash.replace('#','');
+    if (state.session === 'admin') { if (v !== 'entrar') { location.replace('/admin.html'); return; } state.session = null; store.del('fsh-session'); }
     if (!VIEWS.includes(v)) v = state.session ? (state.session === 'team' ? 'equipe' : 'inicio') : 'entrar';
     if (OWNER.includes(v) && state.session !== 'owner') v = state.session === 'team' ? 'equipe' : 'entrar';
     if (TEAM.includes(v) && state.session !== 'team') v = state.session === 'owner' ? 'inicio' : 'entrar';
@@ -505,9 +507,10 @@ img{max-width:100%}
   window.addEventListener('hashchange', show);
 
   // LOGIN
-  const setRole = (r) => { state.role = r; $('#roleOwner').setAttribute('aria-pressed', r==='owner'); $('#roleTeam').setAttribute('aria-pressed', r==='team'); $('#loginEmail').value = r==='team' ? 'matheus@fivestarhome.us' : 'ana@exemplo.com'; };
+  const setRole = (r) => { state.role = r; $('#roleOwner').setAttribute('aria-pressed', r==='owner'); $('#roleTeam').setAttribute('aria-pressed', r==='team'); $('#roleAdmin').setAttribute('aria-pressed', r==='admin'); $('#loginEmail').value = r==='team' ? 'matheus@fivestarhome.us' : r==='admin' ? 'jessica@fivestarhome.us' : 'ana@exemplo.com'; };
   $('#roleOwner').onclick = () => setRole('owner');
   $('#roleTeam').onclick = () => setRole('team');
+  $('#roleAdmin').onclick = () => setRole('admin');
   $('#togglePass').onclick = () => { const i = $('#loginPass'); const s = i.type === 'password'; i.type = s ? 'text' : 'password'; $('#togglePass').textContent = s ? 'Ocultar' : 'Mostrar'; };
   $('#forgotBtn').onclick = () => { $('#forgotMsg').hidden = false; };
   $('#loginForm').addEventListener('submit', (e) => {
@@ -515,7 +518,9 @@ img{max-width:100%}
     const email = $('#loginEmail').value.trim(), pass = $('#loginPass').value, err = $('#loginErr');
     if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = 'Digite um e-mail válido, como voce@email.com.'; err.hidden = false; return; }
     if (pass.length < 4) { err.textContent = 'A senha precisa ter pelo menos 4 caracteres.'; err.hidden = false; return; }
-    err.hidden = true; state.session = state.role;
+    err.hidden = true;
+    if (state.role === 'admin') { store.set('fsh-session', 'admin'); location.href = '/admin.html'; return; }
+    state.session = state.role;
     if (state.role === 'owner') state.owner.email = email;
     if ($('#remember').checked) store.set('fsh-session', state.role); else store.del('fsh-session');
     renderOwner(); location.hash = state.role === 'team' ? 'equipe' : 'inicio';

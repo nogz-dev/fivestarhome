@@ -12,6 +12,13 @@ Versão de demonstração: os dados ficam só no navegador, o login aceita qualq
 - Suporte em formato de conversa
 - Conta: planos, faturas, notificações e indicação
 - Área da equipe: roteiro do dia e inspeção em campo
+- Painel do administrador (`/admin`): visão geral do negócio, clientes, imóveis, chamados, inspeções, financeiro, comercial, equipe e suporte
+
+## Acessos de demonstração
+No login, escolha o tipo de acesso e entre com qualquer e-mail válido e senha de 4 caracteres ou mais:
+- **Cliente** abre o app do proprietário
+- **Equipe** abre o roteiro de campo
+- **Admin** abre o painel em `/admin`
 
 ## Estrutura
 ```
@@ -21,7 +28,8 @@ fivestar-app/
 ├── .gitignore
 ├── README.md
 └── public/
-    ├── index.html         o app inteiro
+    ├── index.html         app do cliente e da equipe
+    ├── admin.html         painel do administrador
     ├── manifest.webmanifest
     ├── sw.js              service worker (instalar no celular e abrir offline)
     └── icons/             ícones do app
@@ -48,4 +56,4 @@ npm start
 Abra http://localhost:3000
 
 ## Atualizar o app nos celulares
-Ao publicar mudanças, troque `fivestar-v1` para `fivestar-v2` no arquivo `public/sw.js`. Assim os celulares que já instalaram baixam a versão nova.
+Ao publicar mudanças, troque o número da versão (ex.: `fivestar-v2` para `fivestar-v3`) no arquivo `public/sw.js`. Assim os celulares que já instalaram baixam a versão nova.

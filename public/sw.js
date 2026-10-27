@@ -1,9 +1,10 @@
 // Service worker da Five Star Home.
 // Para publicar uma versão nova e forçar atualização nos celulares, troque o número abaixo.
-const CACHE = 'fivestar-v1';
+const CACHE = 'fivestar-v2';
 const SHELL = [
   '/',
   '/index.html',
+  '/admin.html',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -29,11 +30,13 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Páginas: tenta a rede primeiro (versão mais nova), cai para o cache se estiver offline.
+  // Cada página fica guardada com o próprio endereço (app do cliente e painel admin separados).
   if (req.mode === 'navigate') {
+    const key = url.pathname.startsWith('/admin') ? '/admin.html' : '/index.html';
     event.respondWith(
       fetch(req)
-        .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('/index.html', copy)); return res; })
-        .catch(() => caches.match('/index.html'))
+        .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(key, copy)); } return res; })
+        .catch(() => caches.match(key))
     );
     return;
   }
