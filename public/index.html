@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="App da Five Star Home Management: contrate seu plano, acompanhe seus imóveis na Flórida, abra chamados e receba atualizações.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Five Star">
+<title>Five Star Home App</title>
+<meta name="theme-color" content="#08121E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one phone-width column centered on a dark glass ground; frosted cards over blurred gold/blue light; floating glass tab bar. */
+:root{
+  --bg:#08121E; --fg:#F4F1EA; --muted:rgba(244,241,234,.72); --faint:rgba(244,241,234,.5);
+  --glass:rgba(255,255,255,.07); --glass-2:rgba(255,255,255,.13); --line:rgba(255,255,255,.15);
+  --gold:#D9B979; --gold-soft:rgba(217,185,121,.16); --blue:#2F6FD6; --info:#9EC1FF;
+  --ok:#7FD8B0; --ok-soft:rgba(127,216,176,.16); --warn:#F2B866; --warn-soft:rgba(242,184,102,.13);
+  --ink:#08121E;
+  --font:'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --r-lg:26px; --r-md:20px; --r-sm:14px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.orb{position:fixed;border-radius:999px;pointer-events:none;filter:blur(90px);z-index:0}
+.orb.a{width:360px;height:360px;background:#C9A86A;opacity:.38;top:-120px;right:-120px}
+.orb.b{width:380px;height:380px;background:var(--blue);opacity:.34;bottom:-80px;left:-160px}
+.app{position:relative;z-index:1;max-width:440px;margin:0 auto;min-height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 24px;display:flex;flex-direction:column}
+section[data-view]{display:flex;flex-direction:column;gap:12px;flex:1}
+h1,h2{margin:0;letter-spacing:-.025em;text-wrap:balance}
+h1{font-size:28px;font-weight:800;line-height:1.08}
+h2{font-size:16px;font-weight:700}
+p{margin:0}
+a{color:var(--gold);text-decoration:none}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.xs{font-size:12px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);display:flex;flex-direction:column;gap:6px;color:var(--fg)}
+.card.big{border-radius:var(--r-lg);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.card.gold{background:var(--gold-soft);border-color:rgba(217,185,121,.45)}
+.card.warn{background:var(--warn-soft);border-color:rgba(242,184,102,.45)}
+.card.okc{background:var(--ok-soft);border-color:rgba(127,216,176,.4)}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{padding:12px}
+.stat b{font-size:24px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.btn{appearance:none;border:none;font:inherit;font-weight:700;font-size:15px;min-height:50px;border-radius:16px;padding:0 18px;background:var(--fg);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.btn.ghost{background:var(--glass);color:var(--fg);border:1px solid var(--line);font-weight:600}
+.btn.gold{background:var(--gold);color:var(--ink)}
+.btn.link{background:transparent;color:var(--gold);min-height:44px;padding:0 6px}
+.btn.sm{min-height:40px;font-size:13px;border-radius:12px;padding:0 14px}
+.btn[disabled]{background:rgba(255,255,255,.1);color:var(--faint);cursor:not-allowed}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.iconbtn{position:relative;width:44px;height:44px;flex-shrink:0;border-radius:var(--r-sm);background:var(--glass);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--fg);cursor:pointer}
+.count{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--gold);color:var(--ink);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{height:48px;border-radius:var(--r-sm);border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--fg);padding:0 14px;font:inherit;font-size:16px;font-weight:500;width:100%}
+.field textarea{height:auto;padding:10px 14px;resize:none}
+.field select option{color:var(--ink)}
+::placeholder{color:var(--faint)}
+.pw{position:relative}
+.pw input{padding-right:84px}
+.pw button{position:absolute;right:6px;top:6px;height:36px;padding:0 10px;border-radius:10px;border:none;background:transparent;color:var(--gold);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:4px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.seg button{min-height:42px;border:none;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--glass-2);color:var(--fg);font-weight:700}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips button{flex-shrink:0;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--ink);border-color:var(--fg);font-weight:700}
+.badge{flex-shrink:0;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
+.b-ok{background:var(--ok-soft);color:#9BE6C4}
+.b-warn{background:var(--warn);color:#2A1A00}
+.b-info{background:rgba(158,193,255,.18);color:#B9D2FF}
+.b-gold{background:var(--gold);color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
+.ico{width:40px;height:40px;flex-shrink:0;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.brand{align-self:flex-start;display:flex;align-items:center;gap:10px;padding:7px 14px 7px 7px;border-radius:999px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:13px;font-weight:800;letter-spacing:.08em}
+.brand span{width:30px;height:30px;border-radius:999px;background:var(--gold);display:flex;align-items:center;justify-content:center}
+.photo{border-radius:18px;background:#1A2C40;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.thumbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.thumbs div{aspect-ratio:1;max-width:100%;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line);display:flex;align-items:flex-end;padding:8px;font-size:10px;font-weight:600;color:var(--muted)}
+.progress{height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden}
+.progress i{display:block;height:100%;border-radius:6px;background:var(--gold);transition:width .3s}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.steps i{height:4px;border-radius:4px;background:rgba(255,255,255,.12)}
+.date{width:54px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:18px;background:var(--glass);border:1px solid var(--line);padding:8px 0}
+.date b{font-size:20px;font-weight:800;line-height:1}
+.tabbar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));margin-top:16px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:6px;border-radius:26px;background:rgba(20,32,46,.6);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);box-shadow:0 12px 40px rgba(0,0,0,.4);z-index:5}
+.tabbar a{position:relative;min-height:54px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:rgba(244,241,234,.66)}
+.tabbar a[aria-current="page"]{background:var(--glass-2);color:var(--fg);font-weight:700}
+.tabbar .count{top:4px;right:calc(50% - 22px)}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.check{width:64px;height:64px;border-radius:999px;display:flex;align-items:center;justify-content:center}
+.plan{width:100%;text-align:left;font:inherit;cursor:pointer}
+.plan[aria-pressed="true"]{background:var(--gold-soft);border:1.5px solid var(--gold);box-shadow:0 10px 40px rgba(217,185,121,.16)}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.pick.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pick button{min-height:44px;border-radius:14px;font:inherit;font-size:14px;cursor:pointer;background:rgba(255,255,255,.06);color:var(--fg);border:1px solid var(--line)}
+.pick button.on-ok{background:var(--ok);color:#062A1C;border-color:var(--ok);font-weight:700}
+.pick button.on-warn{background:var(--warn);color:#2A1A00;border-color:var(--warn);font-weight:700}
+.pick button.on{background:var(--fg);color:var(--ink);border-color:var(--fg);font-weight:700}
+.err{color:#FFB4A8;font-size:13px;font-weight:600}
+.stepper{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.stepper span{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:600;color:var(--faint)}
+.stepper span::before{content:"";height:4px;border-radius:4px;background:rgba(255,255,255,.14)}
+.stepper span.on{color:var(--fg)}
+.stepper span.on::before{background:var(--gold)}
+.upd{display:flex;gap:12px;align-items:flex-start;text-align:left;font:inherit;cursor:pointer;width:100%}
+.upd.unread{border-color:rgba(217,185,121,.45)}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:84%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.45}
+.msg.them{align-self:flex-start;background:var(--glass);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg.me{align-self:flex-end;background:var(--fg);color:var(--ink);border-bottom-right-radius:6px}
+.msg small{display:block;font-size:11px;opacity:.65;margin-top:3px}
+.composer{display:flex;gap:8px;align-items:center}
+.composer input{flex:1;min-width:0;height:48px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--fg);padding:0 14px;font:inherit;font-size:16px}
+details.card summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;min-height:28px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+details.card summary::after{content:"+";font-size:18px;color:var(--gold)}
+details.card[open] summary::after{content:"–"}
+.switch{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;font-size:14px}
+.switch input{width:44px;height:26px;accent-color:#D9B979}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:20;max-width:calc(100% - 32px);padding:12px 16px;border-radius:16px;background:rgba(20,32,46,.85);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:14px;font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="orb a" aria-hidden="true"></div>
+<div class="orb b" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<main class="app" id="app">
+
+<!-- LOGIN -->
+<section data-view="entrar" hidden>
+  <div class="brand"><span><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,16.5 5.5,21 7.5,13.5 2,9 9,9" fill="#08121E"/></svg></span>FIVE STAR HOME</div>
+  <div class="stack" style="margin-top:14px;gap:8px">
+    <h1 style="font-size:34px">Bem-vindo de volta.</h1>
+    <p class="muted">Acompanhe seus imóveis na Flórida, abra chamados e receba as atualizações da equipe.</p>
+  </div>
+  <form class="card big" id="loginForm" novalidate style="gap:14px;padding:18px">
+    <div class="seg" role="group" aria-label="Tipo de acesso">
+      <button type="button" id="roleOwner" aria-pressed="true">Cliente</button>
+      <button type="button" id="roleTeam" aria-pressed="false">Equipe</button>
+    </div>
+    <label class="field" for="loginEmail">E-mail<input id="loginEmail" type="email" autocomplete="email" placeholder="voce@email.com" value="ana@exemplo.com"></label>
+    <label class="field" for="loginPass">Senha<span class="pw"><input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha" value="demo1234"><button type="button" id="togglePass" aria-controls="loginPass">Mostrar</button></span></label>
+    <p class="err" id="loginErr" hidden></p>
+    <div class="between">
+      <label class="row small" style="gap:8px;min-height:44px" for="remember"><input id="remember" type="checkbox" checked style="width:18px;height:18px;accent-color:#D9B979">Manter conectado</label>
+      <button type="button" class="btn link sm" id="forgotBtn">Esqueci a senha</button>
+    </div>
+    <p class="card okc small" id="forgotMsg" hidden style="padding:10px 12px">Enviamos um link para redefinir a senha no seu e-mail.</p>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+  <a class="btn ghost" href="#planos">Ainda não é cliente? Escolher um plano</a>
+  <p class="xs muted" style="text-align:center">Versão de demonstração: qualquer e-mail e senha de 4 caracteres ou mais entram.</p>
+</section>
+
+<!-- PLANOS -->
+<section data-view="planos" hidden>
+  <div class="row"><a class="iconbtn" href="#entrar" id="plansBack" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><h2>Planos</h2></div>
+  <h1>Escolha o nível de cuidado do seu imóvel</h1>
+  <p class="small muted">Orlando, Miami e região. Você pode mudar de plano quando quiser.</p>
+  <div id="planList" class="stack"></div>
+  <a class="btn" href="#assinar" id="planCta">Continuar</a>
+  <button class="btn link" type="button" id="leadToggle">Prefiro uma avaliação antes de contratar</button>
+  <form class="card big" id="leadForm" hidden style="gap:12px;padding:16px">
+    <h2>Pedir avaliação do imóvel</h2>
+    <label class="field" for="leadName">Nome completo<input id="leadName" type="text" autocomplete="name"></label>
+    <label class="field" for="leadPhone">WhatsApp<input id="leadPhone" type="tel" placeholder="+1 ou +55"></label>
+    <label class="field" for="leadCity">Onde fica o imóvel<select id="leadCity"><option>Orlando e região</option><option>Miami e região</option><option>Outra cidade da Flórida</option></select></label>
+    <button class="btn ghost" type="submit">Enviar pedido</button>
+  </form>
+  <p class="card okc small" id="leadDone" hidden>Pedido enviado. A equipe entra em contato pelo WhatsApp para agendar a avaliação.</p>
+</section>
+
+<!-- ASSINAR -->
+<section data-view="assinar" hidden>
+  <div class="row"><a class="iconbtn" href="#planos" aria-label="Voltar aos planos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><div><h2>Contratar plano</h2><span class="xs muted" id="buySummary"></span></div></div>
+  <div class="stepper" aria-hidden="true"><span id="st1">Seus dados</span><span id="st2">Imóvel</span><span id="st3">Pagamento</span></div>
+  <form class="card big" id="buy1" style="gap:12px;padding:16px">
+    <h2>Seus dados</h2>
+    <label class="field" for="bName">Nome completo<input id="bName" type="text" autocomplete="name" value="Ana Souza"></label>
+    <label class="field" for="bEmail">E-mail<input id="bEmail" type="email" autocomplete="email" value="ana@exemplo.com"></label>
+    <label class="field" for="bPhone">WhatsApp<input id="bPhone" type="tel" value="+55 71 99999-0000"></label>
+    <label class="field" for="bPass">Crie uma senha<input id="bPass" type="password" autocomplete="new-password" value="demo1234"></label>
+    <p class="err" id="buyErr1" hidden></p>
+    <button class="btn" type="submit">Continuar</button>
+  </form>
+  <form class="card big" id="buy2" hidden style="gap:12px;padding:16px">
+    <h2>Seu imóvel</h2>
+    <label class="field" for="bAddr">Endereço<input id="bAddr" type="text" autocomplete="street-address" value="Casa em Lake Nona"></label>
+    <label class="field" for="bCity">Cidade<select id="bCity"><option>Orlando</option><option>Miami</option><option>Kissimmee</option><option>Outra cidade da Flórida</option></select></label>
+    <label class="field" for="bType">Tipo<select id="bType"><option>Casa</option><option>Apartamento / condo</option><option>Townhome</option><option>Villa</option></select></label>
+    <label class="field" for="bUse">Como o imóvel é usado<select id="bUse"><option>Uso da família</option><option>Aluguel por temporada (Airbnb/VRBO)</option><option>Aluguel de longo prazo</option><option>Fechado a maior parte do ano</option></select></label>
+    <div class="grid2"><button class="btn ghost" type="button" id="back2">Voltar</button><button class="btn" type="submit">Continuar</button></div>
+  </form>
+  <form class="card big" id="buy3" hidden style="gap:12px;padding:16px">
+    <h2>Pagamento</h2>
+    <div class="card" style="padding:12px 14px"><div class="between small"><span id="payPlan">Plano</span><b id="payPrice"></b></div><span class="xs muted">Cobrança mensal no cartão. Cancele quando quiser.</span></div>
+    <label class="field" for="cName">Nome no cartão<input id="cName" type="text" autocomplete="off" value="ANA SOUZA"></label>
+    <label class="field" for="cNum">Número do cartão<input id="cNum" type="text" inputmode="numeric" autocomplete="off" value="4242 4242 4242 4242"></label>
+    <div class="grid2">
+      <label class="field" for="cExp">Validade<input id="cExp" type="text" inputmode="numeric" autocomplete="off" value="12/29"></label>
+      <label class="field" for="cCvv">CVV<input id="cCvv" type="text" inputmode="numeric" autocomplete="off" value="123"></label>
+    </div>
+    <p class="xs muted">Ambiente de demonstração: nenhum valor é cobrado. Não digite um cartão real.</p>
+    <div class="grid2"><button class="btn ghost" type="button" id="back3">Voltar</button><button class="btn gold" type="submit" id="payBtn">Assinar</button></div>
+  </form>
+</section>
+
+<!-- BEM-VINDO -->
+<section data-view="bem-vindo" hidden>
+  <div class="card big center" style="margin-top:50px;padding:28px 22px">
+    <div class="check" style="background:var(--gold)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#08121E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4,12 10,18 20,6"/></svg></div>
+    <h1 style="font-size:26px">Plano contratado</h1>
+    <p class="small muted" id="welcomeMsg"></p>
+    <ol class="small" style="text-align:left;margin:4px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)">
+      <li>A equipe confirma os detalhes pelo WhatsApp.</li>
+      <li>Agendamos a primeira inspeção com relatório de fotos.</li>
+      <li>Você acompanha tudo por aqui e recebe os avisos no celular.</li>
+    </ol>
+    <a class="btn" href="#inicio" style="width:100%">Ir para meu imóvel</a>
+  </div>
+</section>
+
+<!-- INÍCIO -->
+<section data-view="inicio" hidden>
+  <div class="between">
+    <div><span class="small muted">Olá, <span data-owner-first>Ana</span></span><h1 style="font-size:26px">Seus imóveis</h1></div>
+    <a class="iconbtn" href="#avisos" aria-label="Avisos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="count" data-unread hidden></span></a>
+  </div>
+  <div class="chips" id="propChips" role="group" aria-label="Escolher imóvel"></div>
+  <div id="homeBody" class="stack"></div>
+  <span class="eyebrow" style="margin-top:4px">Ações rápidas</span>
+  <div class="grid2">
+    <a class="card" href="#chamados" data-quick="ticket" style="gap:8px"><span class="ico" style="background:var(--warn-soft)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F2B866" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/></svg></span><b class="small">Abrir chamado</b><span class="xs muted">Reparo ou manutenção</span></a>
+    <a class="card" href="#suporte" style="gap:8px"><span class="ico" style="background:rgba(47,111,214,.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9EC1FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span><b class="small">Falar com o suporte</b><span class="xs muted">Dúvidas, plano e faturas</span></a>
+  </div>
+  <span class="eyebrow" style="margin-top:4px">Últimas atualizações</span>
+  <div id="homeUpdates" class="stack"></div>
+  <a class="btn ghost" href="#avisos">Ver todos os avisos</a>
+</section>
+
+<!-- IMÓVEIS -->
+<section data-view="imoveis" hidden>
+  <div><h1 style="font-size:26px">Imóveis</h1><span class="small muted">Tudo o que a Five Star cuida para você</span></div>
+  <div id="propList" class="stack"></div>
+  <a class="btn ghost" href="#planos">+ Adicionar outro imóvel</a>
+</section>
+
+<!-- INSPEÇÃO -->
+<section data-view="inspecao" hidden>
+  <div class="row"><a class="iconbtn" href="#inicio" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><div><h1 style="font-size:22px" id="inspTitle">Inspeção</h1><span class="xs muted" id="inspBy"></span></div></div>
+  <div class="grid3" id="inspStats"></div>
+  <div class="seg" role="group" aria-label="Filtro"><button type="button" id="fAll" aria-pressed="true">Todos os itens</button><button type="button" id="fAttn" aria-pressed="false">Só atenção</button></div>
+  <div id="inspList" class="stack"></div>
+  <h2 style="margin-top:4px">Fotos da visita</h2>
+  <div class="thumbs"><div>Cozinha</div><div>Sala</div><div>Quadro elétrico</div><div>Banheiro suíte</div><div>Ar-condicionado</div><div>Fachada</div></div>
+</section>
+
+<!-- AGENDA -->
+<section data-view="agenda" hidden>
+  <div class="row"><a class="iconbtn" href="#inicio" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><div><h1 style="font-size:22px">Agenda</h1><span class="xs muted" id="agendaProp"></span></div></div>
+  <p class="card okc small" id="arrivalOk" hidden>Chegada registrada. A equipe vai preparar a casa e confirmar pelo WhatsApp.</p>
+  <button class="btn ghost" type="button" id="arrivalBtn">+ Avisar uma chegada</button>
+  <form class="card big" id="arrivalForm" hidden style="gap:12px;padding:16px">
+    <h2>Avisar uma chegada</h2>
+    <div class="grid2">
+      <label class="field" for="aIn">Chegada<input id="aIn" type="date" value="2026-11-20"></label>
+      <label class="field" for="aOut">Saída<input id="aOut" type="date" value="2026-11-30"></label>
+    </div>
+    <label class="field" for="aWho">Quem vem<select id="aWho"><option>Eu e minha família</option><option>Hóspedes (Airbnb/VRBO)</option><option>Amigos ou convidados</option></select></label>
+    <label class="row small" for="aFridge" style="gap:10px;min-height:44px"><input id="aFridge" type="checkbox" checked style="width:20px;height:20px;accent-color:#D9B979">Abastecer geladeira antes da chegada</label>
+    <button class="btn" type="submit">Confirmar chegada</button>
+  </form>
+  <span class="eyebrow" style="margin-top:6px">Próximos dias</span>
+  <div id="eventList" class="stack"></div>
+</section>
+
+<!-- CHAMADOS -->
+<section data-view="chamados" hidden>
+  <div class="between"><div><h1 style="font-size:26px">Chamados</h1><span class="xs muted">Reparos e manutenção dos seus imóveis</span></div><button class="btn sm" type="button" id="newTicketBtn">+ Novo</button></div>
+  <form class="card big" id="ticketForm" hidden style="gap:12px;padding:16px">
+    <h2>O que precisa de atenção?</h2>
+    <label class="field" for="tProp">Imóvel<select id="tProp"></select></label>
+    <label class="field" for="tType">Tipo<select id="tType"><option>Encanamento</option><option>Elétrica</option><option>Ar-condicionado</option><option>Limpeza</option><option>Reforma ou melhoria</option><option>Outro</option></select></label>
+    <label class="field" for="tDesc">Descreva<textarea id="tDesc" rows="3" placeholder="Ex.: a porta da varanda está emperrando"></textarea></label>
+    <span class="field" style="gap:0">Urgência</span>
+    <div class="pick three" id="urgPick"></div>
+    <label class="field" for="tPhotos">Fotos (opcional)<input id="tPhotos" type="file" accept="image/*" multiple style="padding-top:12px;font-size:13px"></label>
+    <div class="grid2"><button class="btn ghost" type="button" id="cancelTicket">Cancelar</button><button class="btn" type="submit">Enviar</button></div>
+  </form>
+  <div id="ticketList" class="stack"></div>
+</section>
+
+<!-- AVISOS -->
+<section data-view="avisos" hidden>
+  <div class="between"><div><h1 style="font-size:26px">Avisos</h1><span class="xs muted" id="unreadLine"></span></div><button class="btn link sm" type="button" id="readAll">Marcar como lidos</button></div>
+  <div class="card gold" id="pushCard" style="gap:10px">
+    <b class="small">Receba os avisos no celular</b>
+    <span class="xs muted">Relatórios de inspeção, chamados, chegadas e faturas assim que acontecerem.</span>
+    <button class="btn gold sm" type="button" id="pushBtn" style="align-self:flex-start">Ativar notificações</button>
+  </div>
+  <div class="chips" id="updFilter" role="group" aria-label="Filtrar avisos"></div>
+  <div id="updList" class="stack"></div>
+</section>
+
+<!-- SUPORTE -->
+<section data-view="suporte" hidden>
+  <div class="row"><a class="iconbtn" href="#conta" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><div><h1 style="font-size:22px">Suporte</h1><span class="xs muted">Equipe Five Star · responde em horário comercial</span></div></div>
+  <div class="card big" style="gap:12px">
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div class="chips" id="topics" role="group" aria-label="Assuntos"></div>
+    <form class="composer" id="msgForm"><label for="msgInput" style="position:absolute;left:-9999px">Mensagem</label><input id="msgInput" type="text" placeholder="Escreva sua mensagem" autocomplete="off"><button class="btn" type="submit" style="min-height:48px;padding:0 16px">Enviar</button></form>
+  </div>
+  <span class="eyebrow" style="margin-top:4px">Outros canais</span>
+  <div class="card" style="gap:10px">
+    <div class="between"><span class="small">WhatsApp</span><a class="small" href="https://wa.me/17862174571" target="_blank" rel="noopener" style="font-weight:700">+1 (786) 217-4571</a></div>
+    <div class="between"><span class="small">E-mail</span><span class="small" style="user-select:all;font-weight:600">info@fivestarhome.us</span></div>
+  </div>
+  <span class="eyebrow" style="margin-top:4px">Perguntas frequentes</span>
+  <details class="card"><summary>Como funciona se eu moro fora dos EUA?</summary><span class="small muted">A equipe visita o imóvel na frequência do seu plano, envia relatório com fotos e coordena reparos e prestadores. Você acompanha tudo por aqui.</span></details>
+  <details class="card"><summary>Vocês atendem Airbnb e VRBO?</summary><span class="small muted">Sim. Preparamos o imóvel entre estadias e coordenamos a limpeza. Os hóspedes contam com concierge 24/7 pela parceria com a Local Bird.</span></details>
+  <details class="card"><summary>Como mudo de plano?</summary><span class="small muted">Em Conta, toque em "Mudar ou adicionar plano", ou fale com a gente aqui no suporte.</span></details>
+</section>
+
+<!-- CONTA -->
+<section data-view="conta" hidden>
+  <h1 style="font-size:26px">Conta</h1>
+  <div class="card big row" style="flex-direction:row;align-items:center;gap:14px">
+    <span class="ico" style="width:48px;height:48px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:800;font-size:18px" data-owner-initial>A</span>
+    <div style="flex:1;min-width:0"><b data-owner-name>Ana Souza</b><br><span class="xs muted" data-owner-email>ana@exemplo.com</span></div>
+  </div>
+  <span class="eyebrow" style="margin-top:4px">Seus planos</span>
+  <div id="planSummary" class="stack"></div>
+  <a class="btn ghost" href="#planos">Mudar ou adicionar plano</a>
+  <span class="eyebrow" style="margin-top:4px">Faturas</span>
+  <div id="invoiceList" class="stack"></div>
+  <span class="xs muted">Cobrança automática no cartão final 4242</span>
+  <span class="eyebrow" style="margin-top:4px">Notificações</span>
+  <div class="card" style="gap:0;padding-block:6px">
+    <label class="switch" for="nPush"><span>No celular (push)</span><input id="nPush" type="checkbox" role="switch"></label>
+    <label class="switch" for="nWa"><span>WhatsApp</span><input id="nWa" type="checkbox" role="switch" checked></label>
+    <label class="switch" for="nMail"><span>E-mail</span><input id="nMail" type="checkbox" role="switch" checked></label>
+  </div>
+  <a class="card" href="#suporte" style="flex-direction:row;align-items:center;justify-content:space-between"><b class="small">Falar com o suporte</b><span aria-hidden="true">›</span></a>
+  <div class="card big gold" style="gap:8px">
+    <h2>Indique e ganhe US$ 300</h2>
+    <span class="small muted">Para cada indicado que fechar contrato anual com a Five Star.</span>
+    <a class="btn gold sm" href="https://wa.me/17862174571?text=Ol%C3%A1!%20Quero%20fazer%20uma%20indica%C3%A7%C3%A3o." target="_blank" rel="noopener" style="align-self:flex-start">Fazer uma indicação</a>
+  </div>
+  <a class="btn ghost" href="#entrar" data-logout>Sair da conta</a>
+</section>
+
+<!-- EQUIPE · HOJE -->
+<section data-view="equipe" hidden>
+  <div class="between">
+    <div><span class="small muted">Terça, 27 de outubro</span><h1 style="font-size:26px">Bom dia, Matheus</h1></div>
+    <a class="btn ghost sm" href="#entrar" data-logout style="color:var(--gold)">Sair</a>
+  </div>
+  <div class="grid3">
+    <div class="card stat"><b>4</b><span class="xs muted">visitas</span></div>
+    <div class="card stat"><b>2</b><span class="xs muted">inspeções</span></div>
+    <div class="card stat"><b>1</b><span class="xs muted">chamado</span></div>
+  </div>
+  <span class="eyebrow" style="margin-top:4px">Roteiro de hoje</span>
+  <a class="card gold big" href="#equipe-inspecao" style="flex-direction:row;align-items:center;gap:14px;box-shadow:0 10px 40px rgba(217,185,121,.16)">
+    <b style="width:52px;flex-shrink:0;font-variant-numeric:tabular-nums">09:00</b>
+    <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><b class="small">Inspeção quinzenal</b><span class="xs muted">Casa em Celebration · Premium</span><span class="badge" id="teamFirstBadge" style="align-self:flex-start;margin-top:4px;background:var(--fg);color:var(--ink)">Começar agora</span></span>
+  </a>
+  <div class="card big" style="flex-direction:row;align-items:center;gap:14px"><b style="width:52px;flex-shrink:0">11:00</b><span><b class="small">Acompanhar encanador</b><br><span class="xs muted">Casa em Windermere · torneira da cozinha</span></span></div>
+  <div class="card big" style="flex-direction:row;align-items:center;gap:14px"><b style="width:52px;flex-shrink:0">14:00</b><span><b class="small">Limpeza de virada</b><br><span class="xs muted">Villa em Kissimmee · check-in às 16h</span></span></div>
+  <div class="card big" style="flex-direction:row;align-items:center;gap:14px"><b style="width:52px;flex-shrink:0">16:30</b><span><b class="small">Inspeção mensal</b><br><span class="xs muted">Townhome em Lake Nona · Essential Care</span></span></div>
+</section>
+
+<!-- EQUIPE · INSPEÇÃO -->
+<section data-view="equipe-inspecao" hidden>
+  <div class="card big" style="gap:10px">
+    <div class="row"><a class="iconbtn" href="#equipe" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15,5 8,12 15,19"/></svg></a><div><b>Casa em Celebration</b><br><span class="xs muted">Inspeção quinzenal · Premium</span></div></div>
+    <div class="between xs muted"><span id="chkCount"></span><span id="chkPhotos"></span></div>
+    <div class="progress"><i id="chkBar"></i></div>
+  </div>
+  <div id="chkList" class="stack"></div>
+  <button class="btn" type="button" id="sendReport">Enviar relatório ao proprietário</button>
+  <div class="card big center" id="reportDone" hidden style="margin-top:40px;padding:28px 22px">
+    <div class="check" style="background:var(--ok)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#08121E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4,12 10,18 20,6"/></svg></div>
+    <h1 style="font-size:24px">Relatório enviado</h1>
+    <p class="small muted" id="reportMsg"></p>
+    <a class="btn" href="#equipe">Próxima visita</a>
+  </div>
+</section>
+
+<nav class="tabbar" id="tabbar" aria-label="Menu principal" hidden>
+  <a href="#inicio" data-tab="inicio"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6h-6v6H4z"/></svg>Início</a>
+  <a href="#imoveis" data-tab="imoveis"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="8" height="11" rx="1"/><path d="M11 20h10V6l-5-3-5 3z"/></svg>Imóveis</a>
+  <a href="#chamados" data-tab="chamados"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z"/></svg>Chamados</a>
+  <a href="#avisos" data-tab="avisos"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Avisos<span class="count" data-unread hidden></span></a>
+  <a href="#conta" data-tab="conta"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Conta</a>
+</nav>
+</main>
+
+<script>
+(function(){
+  const $ = (s) => document.querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const VIEWS = ['entrar','planos','assinar','bem-vindo','inicio','imoveis','inspecao','agenda','chamados','avisos','suporte','conta','equipe','equipe-inspecao'];
+  const OWNER = ['inicio','imoveis','inspecao','agenda','chamados','avisos','suporte','conta'];
+  const TABMAP = { inspecao:'imoveis', agenda:'imoveis', suporte:'conta' };
+  const TEAM = ['equipe','equipe-inspecao'];
+  const store = {
+    get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+    set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+    del(k){ try { localStorage.removeItem(k); } catch(e){} }
+  };
+  const PLANS = [
+    { id:'essential', name:'Essential Care', price:249, desc:'1 inspeção mensal com relatório de fotos, checagem de água, energia, AC e estrutura, emergência sob demanda.' },
+    { id:'premium', name:'Premium', tag:'mais popular', price:499, desc:'2 inspeções por mês, manutenção e fornecedores coordenados, preparo para uso ou hóspedes, suporte prioritário.' },
+    { id:'vip', name:'VIP', price:999, desc:'Inspeção semanal, gestão completa, concierge personalizado, limpeza, supervisão de reformas e plantão.' }
+  ];
+  const planOf = (id) => PLANS.find((p) => p.id === id);
+  const usd = (n) => 'US$ ' + n.toLocaleString('en-US');
+
+  const state = {
+    role:'owner', session: store.get('fsh-session'),
+    owner:{ name:'Ana Souza', email:'ana@exemplo.com' },
+    plan:'premium', buyStep:1, onlyAttn:false, urgency:'normal', updFilter:'todos',
+    paid:{}, chk:{ agua:'ok', energia:'ok' }, photos:{ agua:3, energia:2 }, push:false,
+    current:'p1',
+    props:[
+      { id:'p1', name:'Casa em Windermere', city:'Orlando', plan:'premium', status:'attn', statusText:'1 ponto de atenção', next:'05/11',
+        insp:{ date:'22/10', by:'Matheus Freitas às 10h40', photos:24, okCount:18, items:[
+          { area:'Ar-condicionado', attn:true, note:'Dreno com umidade acumulada na unidade da sala. Recomendamos limpeza antes da chegada dos hóspedes.' },
+          { area:'Água e encanamento', note:'Sem vazamentos visíveis. Pressão normal em todas as torneiras.' },
+          { area:'Energia e quadro elétrico', note:'Disjuntores normais, sem sinais de aquecimento.' },
+          { area:'Estrutura, portas e janelas', note:'Fechaduras testadas, sem infiltração nas paredes ou no teto.' },
+          { area:'Piscina e área externa', note:'Água limpa, bomba funcionando, jardim em ordem.' }]},
+        events:[
+          { d:'01', w:'dom', k:'team', t:'Limpeza e preparo', n:'Equipe Five Star · roupa de cama e amenities' },
+          { d:'02', w:'seg', k:'guest', t:'Check-in de hóspedes', n:'Reserva Airbnb · 4 pessoas · até 09/11' },
+          { d:'05', w:'qui', k:'team', t:'Inspeção quinzenal', n:'Relatório com fotos no mesmo dia' },
+          { d:'09', w:'seg', k:'team', t:'Check-out e limpeza de virada', n:'Conferência de inventário e danos' }]},
+      { id:'p2', name:'Apartamento em Brickell', city:'Miami', plan:'essential', status:'ok', statusText:'Tudo em ordem', next:'12/11',
+        insp:{ date:'12/10', by:'Jessica Freitas às 15h10', photos:16, okCount:14, items:[
+          { area:'Água e encanamento', note:'Sem vazamentos. Registro geral testado.' },
+          { area:'Energia', note:'Quadro em ordem, tomadas testadas.' },
+          { area:'Ar-condicionado', note:'Funcionando, umidade interna dentro do esperado.' },
+          { area:'Estrutura e varanda', note:'Sem infiltração, porta da varanda travando bem.' }]},
+        events:[ { d:'12', w:'qui', k:'team', t:'Inspeção mensal', n:'Relatório com fotos no mesmo dia' } ]}
+    ],
+    tickets:[
+      { prop:'p1', title:'Vazamento na torneira da cozinha', step:2, meta:'Aberto em 24/10 · encanador agendado para 27/10' },
+      { prop:'p1', title:'Lâmpada queimada na varanda', step:3, meta:'Resolvido em 18/10 · foto do serviço anexada' },
+      { prop:'p2', title:'Trocar fechadura da porta de serviço', step:3, meta:'Resolvido em 09/10' }
+    ],
+    updates:[
+      { id:1, prop:'p1', kind:'insp', t:'Relatório de inspeção disponível', b:'Inspeção de 22/10 · 1 ponto de atenção no AC da sala', when:'22/10 · 11:05', unread:true, go:'inspecao' },
+      { id:2, prop:'p1', kind:'ticket', t:'Encanador agendado', b:'Vazamento na torneira da cozinha · visita em 27/10', when:'25/10 · 09:30', unread:true, go:'chamados' },
+      { id:3, prop:'p1', kind:'bill', t:'Fatura de novembro disponível', b:'Premium e Essential Care · vence em 01/11', when:'20/10 · 08:00', unread:true, go:'conta' },
+      { id:4, prop:'p1', kind:'guest', t:'Hóspedes chegam em 02/11', b:'Limpeza e preparo agendados para 01/11', when:'19/10 · 14:20', unread:false, go:'agenda' },
+      { id:5, prop:'p2', kind:'insp', t:'Relatório: tudo em ordem', b:'Apartamento em Brickell · inspeção de 12/10', when:'12/10 · 16:00', unread:false, go:'inspecao' }
+    ],
+    msgs:[ { me:false, t:'Olá! Aqui é a Jessica, da Five Star. Como posso ajudar?', when:'09:12' } ]
+  };
+  let nextUpd = 6;
+  const curProp = () => state.props.find((p) => p.id === state.current) || state.props[0];
+
+  function toast(t){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => { el.hidden = true; }, 2600); }
+  function addUpdate(u){ state.updates.unshift({ id: nextUpd++, unread:true, when:'Agora', ...u }); renderUpdates(); }
+
+  // ROUTER
+  function show(){
+    let v = location.hash.replace('#','');
+    if (!VIEWS.includes(v)) v = state.session ? (state.session === 'team' ? 'equipe' : 'inicio') : 'entrar';
+    if (OWNER.includes(v) && state.session !== 'owner') v = state.session === 'team' ? 'equipe' : 'entrar';
+    if (TEAM.includes(v) && state.session !== 'team') v = state.session === 'owner' ? 'inicio' : 'entrar';
+    document.querySelectorAll('section[data-view]').forEach((s) => { s.hidden = s.dataset.view !== v; });
+    const tb = $('#tabbar'); tb.hidden = !OWNER.includes(v);
+    const active = TABMAP[v] || v;
+    tb.querySelectorAll('a').forEach((a) => a.dataset.tab === active ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
+    if (v === 'planos') $('#plansBack').setAttribute('href', state.session === 'owner' ? '#conta' : '#entrar');
+    if (v === 'assinar') setStep(state.session === 'owner' && state.buyStep === 1 ? 2 : state.buyStep);
+    if (v === 'inspecao') renderInsp();
+    if (v === 'agenda') renderEvents();
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+
+  // LOGIN
+  const setRole = (r) => { state.role = r; $('#roleOwner').setAttribute('aria-pressed', r==='owner'); $('#roleTeam').setAttribute('aria-pressed', r==='team'); $('#loginEmail').value = r==='team' ? 'matheus@fivestarhome.us' : 'ana@exemplo.com'; };
+  $('#roleOwner').onclick = () => setRole('owner');
+  $('#roleTeam').onclick = () => setRole('team');
+  $('#togglePass').onclick = () => { const i = $('#loginPass'); const s = i.type === 'password'; i.type = s ? 'text' : 'password'; $('#togglePass').textContent = s ? 'Ocultar' : 'Mostrar'; };
+  $('#forgotBtn').onclick = () => { $('#forgotMsg').hidden = false; };
+  $('#loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('#loginEmail').value.trim(), pass = $('#loginPass').value, err = $('#loginErr');
+    if (!/^\S+@\S+\.\S+$/.test(email)) { err.textContent = 'Digite um e-mail válido, como voce@email.com.'; err.hidden = false; return; }
+    if (pass.length < 4) { err.textContent = 'A senha precisa ter pelo menos 4 caracteres.'; err.hidden = false; return; }
+    err.hidden = true; state.session = state.role;
+    if (state.role === 'owner') state.owner.email = email;
+    if ($('#remember').checked) store.set('fsh-session', state.role); else store.del('fsh-session');
+    renderOwner(); location.hash = state.role === 'team' ? 'equipe' : 'inicio';
+  });
+  document.querySelectorAll('[data-logout]').forEach((a) => a.addEventListener('click', () => { state.session = null; store.del('fsh-session'); }));
+
+  // PLANOS
+  function renderPlans(){
+    $('#planList').innerHTML = PLANS.map((p) => `<button type="button" class="card plan" data-plan="${p.id}" aria-pressed="${state.plan===p.id}"><span class="between" style="width:100%"><b>${p.name}${p.tag ? ` <span class="badge b-gold" style="margin-left:4px">${p.tag}</span>` : ''}</b><b style="font-size:20px;letter-spacing:-.02em;font-variant-numeric:tabular-nums">${usd(p.price)}<span class="xs muted" style="font-weight:500">/mês</span></b></span><span class="small muted">${p.desc}</span></button>`).join('');
+    const p = planOf(state.plan);
+    $('#planCta').textContent = 'Continuar com ' + p.name + ' · ' + usd(p.price) + '/mês';
+  }
+  $('#planList').addEventListener('click', (e) => { const b = e.target.closest('[data-plan]'); if (b) { state.plan = b.dataset.plan; renderPlans(); } });
+  $('#planCta').addEventListener('click', () => { state.buyStep = 1; });
+  $('#leadToggle').onclick = () => { $('#leadForm').hidden = !$('#leadForm').hidden; };
+  $('#leadForm').addEventListener('submit', (e) => { e.preventDefault(); $('#leadForm').hidden = true; $('#leadToggle').hidden = true; $('#leadDone').hidden = false; });
+
+  // ASSINAR
+  function setStep(n){
+    state.buyStep = n;
+    [1,2,3].forEach((i) => { $('#buy'+i).hidden = i !== n; $('#st'+i).classList.toggle('on', i <= n); });
+    const p = planOf(state.plan);
+    $('#buySummary').textContent = p.name + ' · ' + usd(p.price) + '/mês';
+    $('#payPlan').textContent = 'Plano ' + p.name; $('#payPrice').textContent = usd(p.price) + '/mês';
+    $('#payBtn').textContent = 'Assinar · ' + usd(p.price) + '/mês';
+  }
+  $('#buy1').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const err = $('#buyErr1');
+    if (!$('#bName').value.trim() || !/^\S+@\S+\.\S+$/.test($('#bEmail').value.trim())) { err.textContent = 'Preencha seu nome e um e-mail válido.'; err.hidden = false; return; }
+    if ($('#bPass').value.length < 4) { err.textContent = 'A senha precisa ter pelo menos 4 caracteres.'; err.hidden = false; return; }
+    err.hidden = true; setStep(2);
+  });
+  $('#back2').onclick = () => setStep(state.session === 'owner' ? 2 : 1);
+  $('#buy2').addEventListener('submit', (e) => { e.preventDefault(); setStep(3); });
+  $('#back3').onclick = () => setStep(2);
+  $('#buy3').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (state.session !== 'owner') { state.owner = { name: $('#bName').value.trim(), email: $('#bEmail').value.trim() }; state.session = 'owner'; store.set('fsh-session','owner'); }
+    const id = 'p' + (state.props.length + 1 + Math.floor(Math.random()*1000));
+    const name = $('#bAddr').value.trim() || ($('#bType').value + ' em ' + $('#bCity').value);
+    state.props.push({ id, name, city: $('#bCity').value, plan: state.plan, status:'new', statusText:'Primeira inspeção a agendar', next:'a agendar', insp:null, events:[] });
+    state.current = id;
+    addUpdate({ prop:id, kind:'plan', t:'Plano ' + planOf(state.plan).name + ' ativo', b: name + ' · a equipe vai confirmar pelo WhatsApp', go:'inicio' });
+    $('#welcomeMsg').textContent = 'O plano ' + planOf(state.plan).name + ' está ativo para ' + name + '. Bem-vinda à Five Star, ' + state.owner.name.split(' ')[0] + '.';
+    state.buyStep = 1; renderOwner(); location.hash = 'bem-vindo';
+  });
+
+  // OWNER UI
+  function renderOwner(){
+    const first = state.owner.name.split(' ')[0];
+    document.querySelectorAll('[data-owner-first]').forEach((el) => el.textContent = first);
+    document.querySelectorAll('[data-owner-name]').forEach((el) => el.textContent = state.owner.name);
+    document.querySelectorAll('[data-owner-email]').forEach((el) => el.textContent = state.owner.email);
+    document.querySelectorAll('[data-owner-initial]').forEach((el) => el.textContent = first.charAt(0).toUpperCase());
+    renderHome(); renderProps(); renderPlanSummary(); renderInv(); renderTicketProps(); renderTickets(); renderUpdates();
+  }
+  const STATUS = { ok:['var(--ok)','Tudo em ordem'], attn:['var(--warn)','Atenção'], new:['var(--info)','Novo'] };
+  function renderHome(){
+    const p = curProp();
+    $('#propChips').innerHTML = state.props.length > 1 ? state.props.map((x) => `<button type="button" data-prop="${x.id}" aria-pressed="${x.id===p.id}">${esc(x.name)}</button>`).join('') : '';
+    $('#propChips').hidden = state.props.length < 2;
+    const st = STATUS[p.status];
+    const inspCard = p.insp
+      ? `<a class="card" href="#inspecao" style="gap:8px"><span class="ico" style="background:var(--gold-soft)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D9B979" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><polyline points="9,12 11,14 15,10"/></svg></span><b class="small">Inspeção ${p.insp.date}</b><span class="xs muted">${p.insp.okCount} OK · ${p.insp.items.filter((i)=>i.attn).length} atenção · ${p.insp.photos} fotos</span></a>`
+      : `<div class="card" style="gap:8px"><span class="ico" style="background:var(--gold-soft)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D9B979" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/></svg></span><b class="small">Primeira inspeção</b><span class="xs muted">A equipe agenda e avisa aqui</span></div>`;
+    const ev = p.events[0];
+    const agendaCard = `<a class="card" href="#agenda" style="gap:8px"><span class="ico" style="background:rgba(47,111,214,.25)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9EC1FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/></svg></span><b class="small">${ev ? esc(ev.t) + ' ' + ev.d + '/11' : 'Agenda'}</b><span class="xs muted">${ev ? esc(ev.n) : 'Avise quando for usar o imóvel'}</span></a>`;
+    $('#homeBody').innerHTML = `<div class="card big" style="padding:8px;gap:0"><div class="photo" style="height:150px;position:relative">Foto do imóvel<span class="row xs" style="position:absolute;top:10px;left:10px;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(8,18,30,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--fg);letter-spacing:0;text-transform:none;font-weight:600"><i class="dot" style="background:${st[0]}"></i>${esc(p.statusText)}</span></div><div style="padding:10px 8px 8px;display:flex;flex-direction:column;gap:2px"><h2 style="font-size:17px">${esc(p.name)} · ${esc(p.city)}</h2><span class="small muted">Plano ${planOf(p.plan).name} · próxima inspeção ${p.next}</span></div></div><div class="grid2">${inspCard}${agendaCard}</div>`;
+    const ups = state.updates.filter((u) => u.prop === p.id).slice(0,3);
+    $('#homeUpdates').innerHTML = ups.length ? ups.map(updHtml).join('') : '<p class="small muted">Nenhuma atualização deste imóvel ainda.</p>';
+  }
+  $('#propChips').addEventListener('click', (e) => { const b = e.target.closest('[data-prop]'); if (b) { state.current = b.dataset.prop; state.onlyAttn = false; renderHome(); } });
+
+  function renderProps(){
+    $('#propList').innerHTML = state.props.map((p) => { const st = STATUS[p.status]; const open = state.tickets.filter((t) => t.prop === p.id && t.step < 3).length; return `<button type="button" class="card big plan" data-open-prop="${p.id}" style="gap:10px"><div class="photo" style="height:110px">Foto do imóvel</div><div class="between"><b>${esc(p.name)}</b><span class="badge" style="background:var(--glass-2);color:var(--fg)">${planOf(p.plan).name}</span></div><span class="small muted">${esc(p.city)} · próxima inspeção ${p.next}</span><div class="row small" style="gap:14px"><span class="row" style="gap:6px"><i class="dot" style="background:${st[0]}"></i>${esc(p.statusText)}</span><span class="muted">${open} chamado${open===1?'':'s'} aberto${open===1?'':'s'}</span></div></button>`; }).join('');
+  }
+  $('#propList').addEventListener('click', (e) => { const b = e.target.closest('[data-open-prop]'); if (b) { state.current = b.dataset.openProp; renderHome(); location.hash = 'inicio'; } });
+
+  // INSPEÇÃO
+  function renderInsp(){
+    const p = curProp();
+    if (!p.insp) { $('#inspTitle').textContent = 'Sem inspeção ainda'; $('#inspBy').textContent = p.name; $('#inspStats').innerHTML = ''; $('#inspList').innerHTML = '<p class="small muted">O primeiro relatório aparece aqui assim que a equipe visitar o imóvel.</p>'; return; }
+    const attn = p.insp.items.filter((i) => i.attn).length;
+    $('#inspTitle').textContent = 'Inspeção de ' + p.insp.date;
+    $('#inspBy').textContent = p.name + ' · ' + p.insp.by;
+    $('#inspStats').innerHTML = `<div class="card stat"><b style="color:var(--ok)">${p.insp.okCount}</b><span class="xs muted">itens OK</span></div><div class="card stat ${attn?'warn':''}"><b style="color:${attn?'var(--warn)':'var(--fg)'}">${attn}</b><span class="xs muted">atenção</span></div><div class="card stat"><b>${p.insp.photos}</b><span class="xs muted">fotos</span></div>`;
+    $('#fAll').setAttribute('aria-pressed', !state.onlyAttn); $('#fAttn').setAttribute('aria-pressed', state.onlyAttn);
+    const items = p.insp.items.filter((i) => !state.onlyAttn || i.attn);
+    $('#inspList').innerHTML = items.length ? items.map((i) => `<div class="card ${i.attn?'warn':''}"><div class="between"><b class="small">${i.area}</b><span class="badge ${i.attn?'b-warn':'b-ok'}">${i.attn?'Atenção':'OK'}</span></div><span class="small muted">${i.note}</span>${i.attn?`<button type="button" class="btn sm" data-auth="${esc(i.area)}" style="align-self:flex-start;margin-top:4px">Autorizar reparo</button>`:''}</div>`).join('') : '<p class="small muted">Nenhum item precisa de atenção.</p>';
+  }
+  $('#fAll').onclick = () => { state.onlyAttn = false; renderInsp(); };
+  $('#fAttn').onclick = () => { state.onlyAttn = true; renderInsp(); };
+  $('#inspList').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-auth]'); if (!b) return;
+    const p = curProp();
+    state.tickets.unshift({ prop:p.id, title:'Reparo autorizado · ' + b.dataset.auth, step:1, meta:'Autorizado agora a partir da inspeção de ' + p.insp.date });
+    p.insp.items.forEach((i) => { if (i.area === b.dataset.auth) i.authorized = true; });
+    addUpdate({ prop:p.id, kind:'ticket', t:'Reparo autorizado', b: b.dataset.auth + ' · a equipe vai agendar o serviço', go:'chamados' });
+    renderTickets(); toast('Reparo autorizado. Acompanhe em Chamados.'); location.hash = 'chamados';
+  });
+
+  // AGENDA
+  function renderEvents(){
+    const p = curProp();
+    $('#agendaProp').textContent = p.name + ' · ' + p.city;
+    const st = { guest:'background:rgba(47,111,214,.18);border-color:rgba(158,193,255,.35)', team:'', owner:'background:var(--gold-soft);border-color:rgba(217,185,121,.45)' };
+    const dot = { guest:'#9EC1FF', team:'rgba(244,241,234,.6)', owner:'#D9B979' };
+    $('#eventList').innerHTML = p.events.length ? p.events.map((e) => `<div class="row" style="align-items:stretch;gap:10px"><div class="date"><b>${e.d}</b><span class="xs muted">${e.w}</span></div><div class="card" style="flex:1;min-width:0;${st[e.k]}"><b class="small row" style="gap:8px"><i class="dot" style="background:${dot[e.k]}"></i>${esc(e.t)}</b><span class="xs muted">${esc(e.n)}</span></div></div>`).join('') : '<p class="small muted">Nada agendado ainda.</p>';
+  }
+  $('#arrivalBtn').onclick = () => { $('#arrivalForm').hidden = false; $('#arrivalBtn').hidden = true; $('#arrivalOk').hidden = true; };
+  $('#arrivalForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const p = curProp(), d = new Date($('#aIn').value + 'T12:00:00');
+    const wd = ['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()] || '';
+    const day = isNaN(d) ? '--' : String(d.getDate()).padStart(2,'0');
+    const who = $('#aWho').value;
+    p.events.push({ d:day, w:wd, k: who.startsWith('Hóspedes') ? 'guest' : 'owner', t:'Chegada · ' + who.toLowerCase(), n: $('#aFridge').checked ? 'Casa pronta e geladeira abastecida' : 'Casa pronta para a chegada' });
+    addUpdate({ prop:p.id, kind:'guest', t:'Chegada registrada', b: p.name + ' · a equipe vai preparar a casa', go:'agenda' });
+    $('#arrivalForm').hidden = true; $('#arrivalBtn').hidden = false; $('#arrivalOk').hidden = false; renderEvents(); renderHome();
+  });
+
+  // CHAMADOS
+  const LABELS = ['Recebido','Em andamento','Resolvido'], BADGE = ['b-info','b-warn','b-ok'], SEG = ['#9EC1FF','#F2B866','#7FD8B0'];
+  const propName = (id) => (state.props.find((p) => p.id === id) || {}).name || '';
+  function renderTickets(){
+    $('#ticketList').innerHTML = state.tickets.map((t) => `<div class="card"><div class="between" style="align-items:flex-start"><b class="small">${esc(t.title)}</b><span class="badge ${BADGE[t.step-1]}">${LABELS[t.step-1]}</span></div><span class="xs muted">${esc(propName(t.prop))} · ${esc(t.meta)}</span><div class="steps">${[1,2,3].map((n) => `<i style="${t.step>=n?'background:'+SEG[t.step-1]:''}"></i>`).join('')}</div></div>`).join('');
+    renderProps();
+  }
+  function renderTicketProps(){ $('#tProp').innerHTML = state.props.map((p) => `<option value="${p.id}" ${p.id===state.current?'selected':''}>${esc(p.name)}</option>`).join(''); }
+  const URG = [['baixa','Pode esperar'],['normal','Normal'],['alta','Urgente']];
+  function renderUrg(){ $('#urgPick').innerHTML = URG.map(([id,l]) => `<button type="button" data-urg="${id}" class="${state.urgency===id?'on':''}" aria-pressed="${state.urgency===id}">${l}</button>`).join(''); }
+  $('#urgPick').addEventListener('click', (e) => { const b = e.target.closest('[data-urg]'); if (b) { state.urgency = b.dataset.urg; renderUrg(); } });
+  const openTicketForm = () => { renderTicketProps(); $('#ticketForm').hidden = false; $('#newTicketBtn').hidden = true; };
+  $('#newTicketBtn').onclick = () => { openTicketForm(); $('#tDesc').focus(); };
+  document.querySelector('[data-quick="ticket"]').addEventListener('click', () => setTimeout(openTicketForm, 0));
+  $('#cancelTicket').onclick = () => { $('#ticketForm').hidden = true; $('#newTicketBtn').hidden = false; };
+  $('#ticketForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const desc = $('#tDesc').value.trim(), prop = $('#tProp').value, type = $('#tType').value;
+    const title = desc || (type + ' · novo chamado');
+    state.tickets.unshift({ prop, title, step:1, meta: type + ' · urgência ' + URG.find((u) => u[0]===state.urgency)[1].toLowerCase() + ' · aberto agora' });
+    addUpdate({ prop, kind:'ticket', t:'Chamado recebido', b: title + ' · a equipe responde em breve', go:'chamados' });
+    $('#ticketForm').reset(); $('#ticketForm').hidden = true; $('#newTicketBtn').hidden = false; renderTickets(); toast('Chamado enviado para a equipe.');
+  });
+
+  // AVISOS
+  const KIND = { insp:['Inspeções','#D9B979'], ticket:['Chamados','#F2B866'], guest:['Agenda','#9EC1FF'], bill:['Faturas','#7FD8B0'], plan:['Plano','#D9B979'], support:['Suporte','#9EC1FF'] };
+  function updHtml(u){ return `<button type="button" class="card upd ${u.unread?'unread':''}" data-upd="${u.id}"><i class="dot" style="margin-top:7px;background:${u.unread ? KIND[u.kind][1] : 'rgba(255,255,255,.2)'}"></i><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span class="between"><b class="small">${esc(u.t)}</b><span class="xs muted" style="flex-shrink:0">${u.when}</span></span><span class="xs muted">${esc(u.b)}</span></span></button>`; }
+  function renderUpdates(){
+    const unread = state.updates.filter((u) => u.unread).length;
+    document.querySelectorAll('[data-unread]').forEach((el) => { el.textContent = unread; el.hidden = !unread; });
+    $('#unreadLine').textContent = unread ? unread + ' não lido' + (unread>1?'s':'') : 'Tudo em dia';
+    const filters = [['todos','Todos']].concat(Object.keys(KIND).filter((k) => state.updates.some((u) => u.kind === k)).map((k) => [k, KIND[k][0]]));
+    $('#updFilter').innerHTML = filters.map(([k,l]) => `<button type="button" data-f="${k}" aria-pressed="${state.updFilter===k}">${l}</button>`).join('');
+    const list = state.updates.filter((u) => state.updFilter === 'todos' || u.kind === state.updFilter);
+    $('#updList').innerHTML = list.map((u) => updHtml(u).replace('</span></span></button>', `</span><span class="xs" style="color:var(--gold)">${esc(propName(u.prop))}</span></span></button>`)).join('');
+    $('#pushCard').hidden = state.push;
+    $('#nPush').checked = state.push;
+    renderHomeUpdatesOnly();
+  }
+  function renderHomeUpdatesOnly(){ const p = curProp(); const ups = state.updates.filter((u) => u.prop === p.id).slice(0,3); $('#homeUpdates').innerHTML = ups.length ? ups.map(updHtml).join('') : '<p class="small muted">Nenhuma atualização deste imóvel ainda.</p>'; }
+  function openUpd(id){ const u = state.updates.find((x) => x.id === +id); if (!u) return; u.unread = false; if (state.props.some((p) => p.id === u.prop)) state.current = u.prop; renderUpdates(); renderHome(); location.hash = u.go; }
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-upd]'); if (b) openUpd(b.dataset.upd); });
+  $('#updFilter').addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (b) { state.updFilter = b.dataset.f; renderUpdates(); } });
+  $('#readAll').onclick = () => { state.updates.forEach((u) => u.unread = false); renderUpdates(); };
+  const setPush = (on) => { state.push = on; renderUpdates(); toast(on ? 'Notificações ativadas neste celular.' : 'Notificações no celular desativadas.'); };
+  $('#pushBtn').onclick = () => setPush(true);
+  $('#nPush').addEventListener('change', (e) => setPush(e.target.checked));
+
+  // SUPORTE
+  const TOPICS = ['Dúvida sobre fatura','Mudar de plano','Acesso ao app','Outro assunto'];
+  $('#topics').innerHTML = TOPICS.map((t) => `<button type="button" data-topic="${t}">${t}</button>`).join('');
+  $('#topics').addEventListener('click', (e) => { const b = e.target.closest('[data-topic]'); if (b) { $('#msgInput').value = b.dataset.topic + ': '; $('#msgInput').focus(); } });
+  const now = () => { const d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); };
+  function renderMsgs(){ $('#msgs').innerHTML = state.msgs.map((m) => `<div class="msg ${m.me?'me':'them'}">${esc(m.t)}<small>${m.me?'Você':'Jessica · Five Star'} · ${m.when}</small></div>`).join(''); }
+  $('#msgForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const t = $('#msgInput').value.trim(); if (!t) return;
+    state.msgs.push({ me:true, t, when:now() }); $('#msgInput').value = ''; renderMsgs();
+    setTimeout(() => {
+      state.msgs.push({ me:false, t:'Recebido! Vou verificar e te respondo por aqui em breve.', when:now() }); renderMsgs();
+      addUpdate({ prop: state.current, kind:'support', t:'Nova resposta do suporte', b:'Jessica respondeu sua mensagem', go:'suporte' });
+    }, 1200);
+  });
+
+  // CONTA
+  function renderPlanSummary(){
+    const total = state.props.reduce((s,p) => s + planOf(p.plan).price, 0);
+    $('#planSummary').innerHTML = state.props.map((p) => `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div style="flex:1;min-width:0"><b class="small">${esc(p.name)}</b><br><span class="xs muted">Plano ${planOf(p.plan).name}</span></div><b style="font-variant-numeric:tabular-nums">${usd(planOf(p.plan).price)}</b></div>`).join('') + `<div class="between small" style="padding:0 4px"><span class="muted">Total mensal</span><b style="font-variant-numeric:tabular-nums">${usd(total)}</b></div>`;
+  }
+  const INV = [
+    { id:'nov', t:'Planos · novembro', m:'Vence em 01/11', a:'US$ 748', open:true },
+    { id:'rep', t:'Reparo · lâmpada da varanda', m:'Serviço avulso de 18/10', a:'US$ 85', open:true },
+    { id:'out', t:'Planos · outubro', m:'Paga em 01/10', a:'US$ 748' },
+    { id:'set', t:'Planos · setembro', m:'Paga em 01/09', a:'US$ 748' }
+  ];
+  function renderInv(){
+    $('#invoiceList').innerHTML = INV.map((f) => { const open = f.open && !state.paid[f.id]; return `<div class="card" style="flex-direction:row;align-items:center;gap:12px"><div style="flex:1;min-width:0"><b class="small">${f.t}</b><br><span class="xs muted">${f.open && !open ? 'Paga agora' : f.m}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><b style="font-variant-numeric:tabular-nums">${f.a}</b>${open ? `<button type="button" class="btn sm" data-pay="${f.id}" style="min-height:36px">Pagar</button>` : '<span class="badge b-ok">Paga</span>'}</div></div>`; }).join('');
+  }
+  $('#invoiceList').addEventListener('click', (e) => { const b = e.target.closest('[data-pay]'); if (b) { state.paid[b.dataset.pay] = true; renderInv(); toast('Pagamento confirmado.'); } });
+
+  // EQUIPE
+  const CHK = [['agua','Água e encanamento'],['energia','Energia e quadro'],['ac','Ar-condicionado'],['estrutura','Estrutura e infiltração'],['portas','Portas, janelas e fechaduras'],['externa','Piscina e área externa']];
+  function renderChk(){
+    $('#chkList').innerHTML = CHK.map(([id,l]) => { const s = state.chk[id], p = state.photos[id] || 0; return `<div class="card" style="gap:10px"><div class="between"><b class="small">${l}</b><button type="button" class="btn ghost sm" data-photo="${id}" style="min-height:36px;font-size:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>${p ? p + (p>1?' fotos':' foto') : 'Foto'}</button></div><div class="pick"><button type="button" data-ok="${id}" class="${s==='ok'?'on-ok':''}" aria-pressed="${s==='ok'}">OK</button><button type="button" data-attn="${id}" class="${s==='attn'?'on-warn':''}" aria-pressed="${s==='attn'}">Atenção</button></div></div>`; }).join('');
+    const done = CHK.filter(([id]) => state.chk[id]).length;
+    const photos = Object.values(state.photos).reduce((a,b) => a+b, 0);
+    $('#chkCount').textContent = done + ' de ' + CHK.length + ' itens';
+    $('#chkPhotos').textContent = photos + ' fotos';
+    $('#chkBar').style.width = Math.round(done / CHK.length * 100) + '%';
+    $('#sendReport').disabled = done < CHK.length;
+    $('#reportMsg').textContent = 'O proprietário recebeu o relatório com ' + photos + ' fotos e um aviso no celular.';
+  }
+  $('#chkList').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.ok) state.chk[b.dataset.ok] = 'ok';
+    if (b.dataset.attn) state.chk[b.dataset.attn] = 'attn';
+    if (b.dataset.photo) state.photos[b.dataset.photo] = (state.photos[b.dataset.photo] || 0) + 1;
+    renderChk();
+  });
+  $('#sendReport').onclick = () => { $('#chkList').hidden = true; $('#sendReport').hidden = true; $('#reportDone').hidden = false; $('#teamFirstBadge').textContent = 'Concluída'; };
+
+  renderPlans(); renderUrg(); renderMsgs(); renderChk(); renderOwner();
+  show();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>

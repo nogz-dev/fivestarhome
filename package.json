@@ -1,0 +1,13 @@
+{
+  "name": "fivestar-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "App PWA da Five Star Home Management — clientes, imóveis, chamados, avisos e equipe de campo.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
